@@ -52,19 +52,18 @@ const api = {
 
         settings.forEach(setting => {
             if (setting.setting_key === 'head_script' && setting.setting_value) {
-                const scriptEl = document.createElement('script');
-                scriptEl.innerHTML = setting.setting_value;
-                document.head.appendChild(scriptEl);
+                document.head.insertAdjacentHTML('beforeend', setting.setting_value);
             } else if (setting.setting_key === 'body_script' && setting.setting_value) {
-                const scriptEl = document.createElement('script');
-                scriptEl.innerHTML = setting.setting_value;
-                document.body.appendChild(scriptEl);
+                document.body.insertAdjacentHTML('beforeend', setting.setting_value);
             }
         });
     },
 
     // 4. 전면 팝업 렌더링
     renderPopup: async () => {
+        // 이미 24시간 안보기 쿠키가 있는지 확인
+        if (document.cookie.includes('hidePopup_24h=true')) return;
+
         const { data: popups } = await supabaseClient
             .from('popups')
             .select('*')
@@ -74,18 +73,33 @@ const api = {
         if (popups && popups.length > 0) {
             const popup = popups[0];
             const popupHtml = `
-                <div id="sitePopupOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 99999; display: flex; justify-content: center; align-items: center;">
-                    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-                        <button onclick="document.getElementById('sitePopupOverlay').remove()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
-                        <h2 style="margin-top: 0; color: #0f172a; font-size: 1.5rem; margin-bottom: 15px;">${popup.title}</h2>
-                        <div style="color: #334155; line-height: 1.6;">${popup.content}</div>
-                        <div style="text-align: right; margin-top: 20px;">
-                            <button onclick="document.getElementById('sitePopupOverlay').remove()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">닫기</button>
+                <div id="sitePopupOverlay" style="position: fixed; top: 100px; left: 20px; z-index: 99999;">
+                    <div style="background: white; padding: 0; border: 1px solid #1e293b; max-width: 400px; width: 90vw; position: relative; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); border-radius: 0;">
+                        <div style="padding: 20px; border-bottom: 1px solid #e2e8f0;">
+                            <h2 style="margin-top: 0; color: #0f172a; font-size: 1.25rem; margin-bottom: 15px;">${popup.title}</h2>
+                            <div style="color: #334155; line-height: 1.6; font-size: 0.95rem;">${popup.content}</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; padding: 10px 15px;">
+                            <label style="font-size: 0.85rem; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 5px; margin: 0;">
+                                <input type="checkbox" id="hidePopup24hCheckbox"> 24시간 동안 보지 않기
+                            </label>
+                            <button onclick="window.closeSitePopup()" style="background: #334155; color: white; border: none; padding: 6px 15px; border-radius: 0; cursor: pointer; font-size: 0.9rem;">닫기</button>
                         </div>
                     </div>
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', popupHtml);
+            
+            window.closeSitePopup = function() {
+                const cb = document.getElementById('hidePopup24hCheckbox');
+                if (cb && cb.checked) {
+                    const d = new Date();
+                    d.setTime(d.getTime() + (24*60*60*1000));
+                    document.cookie = "hidePopup_24h=true;expires=" + d.toUTCString() + ";path=/";
+                }
+                const popup = document.getElementById('sitePopupOverlay');
+                if (popup) popup.remove();
+            };
         }
     }
 };
