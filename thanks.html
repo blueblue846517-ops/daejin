@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>견적 문의 완료 - 대진방수</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <!-- Supabase SDK & Init -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase_init.js"></script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .thanks-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .thanks-icon {
+            font-size: 64px;
+            color: #3b82f6;
+            margin-bottom: 20px;
+        }
+        .thanks-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 16px;
+        }
+        .thanks-text {
+            font-size: 1.1rem;
+            color: #475569;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .btn-home {
+            background-color: #3b82f6;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: background-color 0.2s;
+        }
+        .btn-home:hover {
+            background-color: #2563eb;
+        }
+        .keyword-display {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container container">
+            <div class="logo">
+                <a href="index.html" style="text-decoration:none; color:inherit;">
+                    <img src="assets/images/logo.png" alt="대진특수방수 로고" style="height:40px; vertical-align:middle; margin-right:10px;" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='">
+                    대진특수방수
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="thanks-container">
+        <div class="thanks-icon">✓</div>
+        <h1 class="thanks-title">문의가 접수되었습니다.</h1>
+        <p class="thanks-text">
+            소중한 문의를 남겨주셔서 감사합니다.<br>
+            담당자가 확인한 후 최대한 빠르게 연락드리겠습니다.
+        </p>
+        <a href="index.html" class="btn-home">홈페이지로 돌아가기</a>
+        <div class="keyword-display" id="keywordDisplay"></div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container container">
+            <p>&copy; 2024 대진방수. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // URL 파라미터에서 키워드 확인 (디버깅/안내용)
+            const params = new URLSearchParams(window.location.search);
+            const keyword = params.get('keyword');
+            if (keyword) {
+                // UI에 살짝 표시 (원치 않으면 제거 가능)
+                document.getElementById('keywordDisplay').innerText = `유입 경로: ${keyword}`;
+            }
+
+            // 공통 로직 적용 (헤더 스크립트 등)
+            if (typeof api !== 'undefined') {
+                await api.applySettings();
+                
+                // 전환 추적 스크립트 (conversion_script) 강제 실행
+                try {
+                    const { data: settings } = await supabaseClient
+                        .from('settings')
+                        .select('setting_value')
+                        .eq('setting_key', 'conversion_script')
+                        .single();
+                        
+                    if (settings && settings.setting_value) {
+                        eval(settings.setting_value);
+                        console.log('Conversion script executed');
+                    }
+                } catch (error) {
+                    console.error('Conversion script load error:', error);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

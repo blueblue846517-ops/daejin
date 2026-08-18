@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자화면 - 대진특수방수</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase_init.js"></script>
+    <style>
+        /* 추가 관리자 스타일 */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 8px; }
+        .form-group input[type="text"], .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; }
+        .btn-primary { background: var(--admin-secondary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-danger { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        
+        .portfolio-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .portfolio-item { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .portfolio-item img { width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================================================
+       LOGIN SCREEN
+       ========================================================================== -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <h2>대진특수방수 관리자화면</h2>
+            <div class="login-error" id="loginError">
+                아이디 또는 비밀번호가 일치하지 않습니다.
+            </div>
+            <form class="login-form" id="loginForm">
+                <input type="text" id="adminId" placeholder="관리자 아이디" required>
+                <input type="password" id="adminPw" placeholder="비밀번호" required>
+                <button type="submit">로그인</button>
+            </form>
+            <p style="margin-top: 20px; font-size: 0.85rem; color: #94a3b8;">
+                <a href="index.html" style="color: inherit; text-decoration: none;">&larr; 홈페이지로 돌아가기</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       DASHBOARD SCREEN
+       ========================================================================== -->
+    <div id="dashboardScreen">
+        <div class="admin-layout">
+            
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="sidebar-header">
+                    <h2>관리자화면</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-link active" data-target="tab-dashboard"><i class="fa-solid fa-house"></i> 대시보드 홈</a>
+                    <a href="#" class="nav-link" data-target="tab-quotes"><i class="fa-solid fa-list-check"></i> 견적 문의 내역</a>
+                    <a href="#" class="nav-link" data-target="tab-portfolio"><i class="fa-solid fa-images"></i> 시공 사례 관리</a>
+                    <a href="#" class="nav-link" data-target="tab-settings"><i class="fa-solid fa-gear"></i> 사이트/팝업 설정</a>
+                    <a href="index.html" class="nav-link" style="margin-top: 20px; background-color: #3b82f6; color: white; border-radius: 8px; justify-content: center;"><i class="fa-solid fa-arrow-up-right-from-square" style="color: white; margin-right: 8px;"></i> 홈페이지로 이동</a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button class="logout-btn" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="admin-main">
+                <header class="page-header">
+                    <h1 id="pageTitle">대시보드 홈</h1>
+                    <div style="font-size: 0.9rem; color: #64748b;">
+                        관리자(blueblue0201)님, 환영합니다!
+                    </div>
+                </header>
+
+                <!-- TAB 1: 대시보드 홈 -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                            <div class="stat-info">
+                                <h3>신규 견적 문의</h3>
+                                <div class="stat-value" id="statNewQuotes">0 건</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                            <div class="stat-info">
+                                <h3>오늘 방문자</h3>
+                                <div class="stat-value" id="statTodayVisits">0 명</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                            <div class="stat-info">
+                                <h3>이번 주 누적 방문자</h3>
+                                <div class="stat-value" id="statWeekVisits">0 명</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quote Requests Table (Preview) -->
+                    <section class="data-section">
+                        <div class="data-section-header">
+                            <h2>최근 견적 및 전화 문의 내역</h2>
+                            <button onclick="document.querySelector('[data-target=\'tab-quotes\']').click()" class="btn-primary" style="padding: 6px 12px; font-size:0.9rem;">전체보기</button>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>상호/이름</th>
+                                    <th>연락처</th>
+                                    <th>시공 항목 / 내용</th>
+                                    <th>접수일</th>
+                                    <th>상태</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewQuotesTable">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <!-- TAB 2: 견적 문의 내역 -->
+                <div id="tab-quotes" class="tab-content">
+                    <section class="data-section">
+                        <div class="data-section-header">
+                            <h2>전체 문의 내역</h2>
+                        </div>
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>상호/이름</th>
+                                    <th>연락처</th>
+                                    <th>시공 항목 / 내용</th>
+                                    <th>접수일</th>
+                                    <th>상태</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allQuotesTable">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <!-- TAB 3: 시공 사례 관리 -->
+                <div id="tab-portfolio" class="tab-content">
+                    <section class="data-section">
+                        <div class="data-section-header">
+                            <h2>새 시공 사례 등록</h2>
+                        </div>
+                        <form id="portfolioForm" style="background: #f8fafc; padding: 20px; border-radius: 8px;">
+                            <div class="form-group">
+                                <label>시공 사례 제목</label>
+                                <input type="text" id="pfTitle" placeholder="예: 강남구 아파트 옥상 방수 공사" required>
+                            </div>
+                            <div class="form-group">
+                                <label>이미지 파일 첨부</label>
+                                <input type="file" id="pfImage" accept="image/*" required>
+                                <p style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">* 용량 제한을 위해 1MB 이하의 이미지를 권장합니다. 자동으로 압축(Base64)되어 DB에 저장됩니다.</p>
+                            </div>
+                            <button type="submit" class="btn-primary">등록하기</button>
+                        </form>
+
+                        <h2 style="margin-top: 40px; margin-bottom: 20px;">등록된 시공 사례 목록</h2>
+                        <div class="portfolio-list" id="portfolioList">
+                            <!-- Portfolio items will be loaded here -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TAB 4: 사이트 및 팝업 설정 -->
+                <div id="tab-settings" class="tab-content">
+                    <!-- Popups -->
+                    <section class="data-section" style="margin-bottom: 30px;">
+                        <div class="data-section-header">
+                            <h2>메인 화면 전면 팝업 설정</h2>
+                        </div>
+                        <form id="popupForm">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="popupActive"> 팝업 활성화 (체크 시 홈페이지 접속자에게 표시됨)
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>팝업 제목</label>
+                                <input type="text" id="popupTitle" placeholder="예: 추석 연휴 휴무 안내">
+                            </div>
+                            <div class="form-group">
+                                <label>팝업 내용 (HTML 지원)</label>
+                                <textarea id="popupContent" rows="5" placeholder="팝업에 들어갈 내용을 적어주세요."></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary">팝업 저장</button>
+                        </form>
+                    </section>
+
+                    <!-- Scripts -->
+                    <section class="data-section">
+                        <div class="data-section-header">
+                            <h2>사이트 스크립트 설정</h2>
+                        </div>
+                        <form id="settingsForm">
+                            <div class="form-group">
+                                <label>Head 영역 스크립트 (&lt;head&gt; 안에 삽입)</label>
+                                <textarea id="headScript" rows="4" placeholder="<script>...</script> 또는 메타 태그"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Body 영역 스크립트 (&lt;body&gt; 끝에 삽입)</label>
+                                <textarea id="bodyScript" rows="4" placeholder="<script>...</script>"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>상담완료 전환추적 스크립트 (견적 폼 전송 성공 시 1회 실행)</label>
+                                <textarea id="convScript" rows="4" placeholder="GFA, Google Ads 등 전환 추적 자바스크립트 코드 (예: gtag('event', 'conversion', {...}))"></textarea>
+                                <p style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">* &lt;script&gt; 태그 없이 내부 자바스크립트 코드만 입력하세요.</p>
+                            </div>
+                            <button type="submit" class="btn-primary">스크립트 설정 저장</button>
+                        </form>
+                    </section>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       ADMIN FUNCTIONALITY SCRIPT
+       ========================================================================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const loginScreen = document.getElementById('loginScreen');
+            const dashboardScreen = document.getElementById('dashboardScreen');
+            const loginError = document.getElementById('loginError');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // 1. Session Check
+            if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                showDashboard();
+            }
+
+            // 2. Login
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('adminId').value;
+                const pw = document.getElementById('adminPw').value;
+                if (id === 'blueblue0201' && pw === 'ckcc!8465') {
+                    loginError.style.display = 'none';
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    showDashboard();
+                } else {
+                    loginError.style.display = 'block';
+                    document.getElementById('adminPw').value = '';
+                }
+            });
+
+            // 3. Logout
+            logoutBtn.addEventListener('click', () => {
+                sessionStorage.removeItem('adminLoggedIn');
+                showLogin();
+            });
+
+            function showDashboard() {
+                loginScreen.style.display = 'none';
+                dashboardScreen.style.display = 'block';
+                loadAdminData(); // 데이터 불러오기
+            }
+
+            function showLogin() {
+                dashboardScreen.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                document.getElementById('adminId').value = '';
+                document.getElementById('adminPw').value = '';
+                loginError.style.display = 'none';
+            }
+
+            // 4. Tab Navigation
+            document.querySelectorAll('.nav-link[data-target]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    // Update active state
+                    document.querySelectorAll('.nav-link[data-target]').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    // Show target tab
+                    const targetId = link.getAttribute('data-target');
+                    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(targetId).classList.add('active');
+                    
+                    // Update title
+                    document.getElementById('pageTitle').innerText = link.innerText;
+                });
+            });
+
+            // ======================================================
+            // SUPABASE DATA LOADING & MANAGEMENT
+            // ======================================================
+
+            async function loadAdminData() {
+                loadQuotes();
+                loadVisitors();
+                loadPortfolios();
+                loadSettingsAndPopups();
+            }
+
+            // --- Quotes ---
+            async function loadQuotes() {
+                const { data: quotes, error } = await supabaseClient
+                    .from('quotes')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error || !quotes) return;
+
+                document.getElementById('statNewQuotes').innerText = `${quotes.filter(q => q.status === '신규 접수' || q.status === '전화 연결').length} 건`;
+
+                const renderTable = (limit, targetId) => {
+                    const tbody = document.getElementById(targetId);
+                    tbody.innerHTML = '';
+                    quotes.slice(0, limit).forEach(q => {
+                        const date = new Date(q.created_at).toLocaleDateString();
+                        const isNew = (q.status === '신규 접수' || q.status === '전화 연결');
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><strong>${q.name}</strong></td>
+                            <td>${q.phone}</td>
+                            <td>
+                                <div><span style="font-size:0.8rem; color:var(--admin-secondary); font-weight:bold;">[${q.service}]</span></div>
+                                <div style="font-size:0.9rem; margin-top:4px;">${q.message}</div>
+                            </td>
+                            <td>${date}</td>
+                            <td><span class="status-badge ${isNew ? 'status-new' : 'status-done'}">${q.status}</span></td>
+                            ${limit > 5 ? `<td>
+                                <select onchange="updateQuoteStatus('${q.id}', this.value)" style="padding:4px;">
+                                    <option value="신규 접수" ${q.status==='신규 접수'?'selected':''}>신규 접수</option>
+                                    <option value="전화 연결" ${q.status==='전화 연결'?'selected':''}>전화 연결</option>
+                                    <option value="상담 완료" ${q.status==='상담 완료'?'selected':''}>상담 완료</option>
+                                    <option value="시공 진행" ${q.status==='시공 진행'?'selected':''}>시공 진행</option>
+                                </select>
+                                <button onclick="deleteQuote('${q.id}')" class="btn-danger" style="margin-left:5px;">삭제</button>
+                            </td>` : ''}
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                };
+
+                renderTable(5, 'previewQuotesTable'); // Dashboard preview
+                renderTable(999, 'allQuotesTable'); // Full list
+            }
+
+            window.updateQuoteStatus = async (id, status) => {
+                await supabaseClient.from('quotes').update({ status }).eq('id', id);
+                loadQuotes();
+            };
+
+            window.deleteQuote = async (id) => {
+                if(confirm('정말 삭제하시겠습니까?')) {
+                    await supabaseClient.from('quotes').delete().eq('id', id);
+                    loadQuotes();
+                }
+            };
+
+            // --- Visitors ---
+            async function loadVisitors() {
+                const { data: visitors, error } = await supabaseClient.from('visitors').select('*');
+                if (error || !visitors) return;
+
+                const today = new Date().toISOString().split('T')[0];
+                const todayData = visitors.find(v => v.visit_date === today);
+                document.getElementById('statTodayVisits').innerText = `${todayData ? todayData.visit_count : 0} 명`;
+
+                // Calculate this week
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                const weekVisits = visitors
+                    .filter(v => new Date(v.visit_date) >= weekAgo)
+                    .reduce((sum, v) => sum + v.visit_count, 0);
+                document.getElementById('statWeekVisits').innerText = `${weekVisits} 명`;
+            }
+
+            // --- Portfolios ---
+            window.currentPortfolios = [];
+            async function loadPortfolios() {
+                const { data: portfolios, error } = await supabaseClient
+                    .from('portfolios')
+                    .select('*');
+
+                if (error) {
+                    console.error('Load Portfolio Error:', error);
+                    alert('시공 사례를 불러오는 데 실패했습니다.\n에러 내용: ' + error.message);
+                    return;
+                }
+                if (!portfolios) return;
+
+                // 클라이언트에서 수동 정렬
+                portfolios.sort((a, b) => {
+                    const orderA = a.display_order !== undefined ? a.display_order : 999;
+                    const orderB = b.display_order !== undefined ? b.display_order : 999;
+                    if (orderA !== orderB) return orderA - orderB;
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+
+                // 순서 정규화 (최초 1회 실행 또는 꼬였을 때 대비)
+                let needsNormalization = false;
+                for (let i = 0; i < portfolios.length; i++) {
+                    if (portfolios[i].display_order !== i) {
+                        needsNormalization = true;
+                        break;
+                    }
+                }
+                if (needsNormalization) {
+                    for (let i = 0; i < portfolios.length; i++) {
+                        portfolios[i].display_order = i;
+                        await supabaseClient.from('portfolios').update({ display_order: i }).eq('id', portfolios[i].id);
+                    }
+                }
+
+                window.currentPortfolios = portfolios;
+                const list = document.getElementById('portfolioList');
+                list.innerHTML = '';
+                
+                if (portfolios.length === 0) {
+                    list.innerHTML = '<div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: #64748b;">아직 등록된 시공 사례가 없습니다. 위의 폼을 이용해 사진을 등록해 보세요!</div>';
+                    return;
+                }
+
+                portfolios.forEach((p, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'portfolio-item';
+                    div.innerHTML = `
+                        <img src="${p.image_data}" alt="${p.title}">
+                        <div style="margin-bottom:10px; display:flex; gap:5px; align-items:center;">
+                            <input type="text" id="title_${p.id}" value="${p.title}" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.9rem;">
+                            <button onclick="editPortfolioTitle('${p.id}')" class="btn-primary" style="padding:6px 10px; font-size:0.85rem; border-radius:4px;">저장</button>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <button onclick="movePortfolio(${index}, 'up')" style="padding:4px 8px; cursor:pointer;" ${index === 0 ? 'disabled' : ''}>▲</button>
+                                <button onclick="movePortfolio(${index}, 'down')" style="padding:4px 8px; cursor:pointer;" ${index === portfolios.length - 1 ? 'disabled' : ''}>▼</button>
+                            </div>
+                            <button onclick="deletePortfolio('${p.id}')" class="btn-danger">삭제</button>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+
+            window.editPortfolioTitle = async (id) => {
+                const newTitle = document.getElementById('title_' + id).value;
+                if (!newTitle.trim()) {
+                    alert('제목을 입력해주세요.');
+                    return;
+                }
+                const { error } = await supabaseClient.from('portfolios').update({ title: newTitle }).eq('id', id);
+                if (error) {
+                    alert('제목 수정 중 오류가 발생했습니다.');
+                } else {
+                    alert('제목이 수정되었습니다.');
+                    loadPortfolios();
+                }
+            };
+
+            window.movePortfolio = async (index, direction) => {
+                const list = window.currentPortfolios;
+                const targetIndex = direction === 'up' ? index - 1 : index + 1;
+                
+                if (targetIndex >= 0 && targetIndex < list.length) {
+                    // swap order
+                    const currentOrder = list[index].display_order;
+                    const targetOrder = list[targetIndex].display_order;
+                    
+                    await Promise.all([
+                        supabaseClient.from('portfolios').update({ display_order: targetOrder }).eq('id', list[index].id),
+                        supabaseClient.from('portfolios').update({ display_order: currentOrder }).eq('id', list[targetIndex].id)
+                    ]);
+                    
+                    loadPortfolios();
+                }
+            };
+
+            document.getElementById('portfolioForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('pfTitle').value;
+                const fileInput = document.getElementById('pfImage');
+                if (fileInput.files.length === 0) return;
+
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64String = reader.result;
+                    const { error } = await supabaseClient
+                        .from('portfolios')
+                        .insert([{ title: title, image_data: base64String }]);
+                    
+                    if (!error) {
+                        alert('시공 사례가 등록되었습니다.');
+                        document.getElementById('portfolioForm').reset();
+                        loadPortfolios();
+                    } else {
+                        console.error('Upload Error:', error);
+                        alert('등록 중 오류가 발생했습니다. 이미지 용량이 너무 큰지 확인해주세요.\n상세 에러: ' + error.message);
+                    }
+                };
+                reader.readAsDataURL(file); // Convert to Base64
+            });
+
+            window.deletePortfolio = async (id) => {
+                if(confirm('삭제하면 홈페이지에서도 즉시 사라집니다. 삭제하시겠습니까?')) {
+                    await supabaseClient.from('portfolios').delete().eq('id', id);
+                    loadPortfolios();
+                }
+            };
+
+            // --- Settings & Popups ---
+            async function loadSettingsAndPopups() {
+                // Settings
+                const { data: settings } = await supabaseClient.from('settings').select('*');
+                if (settings) {
+                    settings.forEach(s => {
+                        if (s.setting_key === 'head_script') document.getElementById('headScript').value = s.setting_value;
+                        if (s.setting_key === 'body_script') document.getElementById('bodyScript').value = s.setting_value;
+                        if (s.setting_key === 'conversion_script') document.getElementById('convScript').value = s.setting_value;
+                    });
+                }
+
+                // Popups (we use a single active popup logic for simplicity)
+                const { data: popups } = await supabaseClient.from('popups').select('*').limit(1);
+                if (popups && popups.length > 0) {
+                    const p = popups[0];
+                    document.getElementById('popupActive').checked = p.is_active;
+                    document.getElementById('popupTitle').value = p.title;
+                    document.getElementById('popupContent').value = p.content;
+                    // Save popup ID to form dataset for updating
+                    document.getElementById('popupForm').dataset.popupId = p.id;
+                }
+            }
+
+            document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const head = document.getElementById('headScript').value;
+                const body = document.getElementById('bodyScript').value;
+                const conv = document.getElementById('convScript').value;
+
+                await supabaseClient.from('settings').upsert([
+                    { setting_key: 'head_script', setting_value: head },
+                    { setting_key: 'body_script', setting_value: body },
+                    { setting_key: 'conversion_script', setting_value: conv }
+                ]);
+                alert('스크립트 설정이 저장되었습니다.');
+            });
+
+            document.getElementById('popupForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const isActive = document.getElementById('popupActive').checked;
+                const title = document.getElementById('popupTitle').value;
+                const content = document.getElementById('popupContent').value;
+                const popupId = document.getElementById('popupForm').dataset.popupId;
+
+                if (popupId) {
+                    await supabaseClient.from('popups').update({ title, content, is_active: isActive }).eq('id', popupId);
+                } else {
+                    await supabaseClient.from('popups').insert([{ title, content, is_active: isActive }]);
+                }
+                alert('팝업 설정이 저장되었습니다.');
+                loadSettingsAndPopups();
+            });
+
+        });
+    </script>
+</body>
+</html>
