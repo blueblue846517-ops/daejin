@@ -105,6 +105,18 @@
                         </div>
                     </div>
 
+                    <!-- Keyword Statistics -->
+                    <section class="data-section" style="margin-bottom: 2rem;">
+                        <div class="data-section-header">
+                            <h2>유입 키워드별 문의 통계</h2>
+                        </div>
+                        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div id="keywordChartContainer">
+                                <p style="color: #64748b; font-size: 0.9rem;">데이터를 불러오는 중입니다...</p>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Quote Requests Table (Preview) -->
                     <section class="data-section">
                         <div class="data-section-header">
@@ -164,9 +176,9 @@
                                 <input type="text" id="pfTitle" placeholder="예: 강남구 아파트 옥상 방수 공사" required>
                             </div>
                             <div class="form-group">
-                                <label>이미지 파일 첨부</label>
-                                <input type="file" id="pfImage" accept="image/*" required>
-                                <p style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">* 용량 제한을 위해 1MB 이하의 이미지를 권장합니다. 자동으로 압축(Base64)되어 DB에 저장됩니다.</p>
+                                <label>이미지 파일 첨부 (여러 장 선택 가능)</label>
+                                <input type="file" id="pfImage" accept="image/*" multiple required>
+                                <p style="font-size: 0.8rem; color: #64748b; margin-top: 5px;">* 여러 장을 추가할 수 있습니다. 갤러리 슬라이드로 표시됩니다. (사진당 1MB 이하 권장)</p>
                             </div>
                             <button type="submit" class="btn-primary">등록하기</button>
                         </form>
@@ -354,6 +366,65 @@
 
                 renderTable(5, 'previewQuotesTable'); // Dashboard preview
                 renderTable(999, 'allQuotesTable'); // Full list
+                renderKeywordStats(quotes);
+            }
+
+            function renderKeywordStats(quotes) {
+                const keywordMap = {};
+                let totalWithKeyword = 0;
+
+                // 정규식을 사용하여 '[유입 키워드: OOO]' 형태에서 OOO 추출
+                const regex = /\[유입 키워드:\s*(.*?)\]/;
+                
+                quotes.forEach(q => {
+                    if (q.message) {
+                        const match = q.message.match(regex);
+                        if (match && match[1]) {
+                            const kw = match[1].trim();
+                            if (kw) {
+                                keywordMap[kw] = (keywordMap[kw] || 0) + 1;
+                                totalWithKeyword++;
+                            }
+                        }
+                    }
+                });
+
+                const container = document.getElementById('keywordChartContainer');
+                
+                if (totalWithKeyword === 0) {
+                    container.innerHTML = '<p style="color: #64748b; font-size: 0.9rem;">아직 키워드를 통해 유입된 견적 문의 데이터가 없습니다.</p>';
+                    return;
+                }
+
+                // 많이 들어온 순으로 정렬
+                const sortedKeywords = Object.entries(keywordMap).sort((a, b) => b[1] - a[1]);
+                
+                let html = '<div style="display: flex; flex-direction: column; gap: 15px;">';
+                
+                // 최고값(100% 바) 기준점 설정
+                const maxCount = sortedKeywords[0][1];
+
+                sortedKeywords.forEach(([kw, count]) => {
+                    const percentage = Math.round((count / maxCount) * 100);
+                    const realPercentage = Math.round((count / totalWithKeyword) * 100);
+                    
+                    html += `
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                                <span style="font-weight: 600; color: #1e293b;">${kw}</span>
+                                <span style="color: #64748b;">${count}건 <span style="font-size:0.8rem;">(${realPercentage}%)</span></span>
+                            </div>
+                            <div style="width: 100%; background-color: #f1f5f9; border-radius: 4px; height: 12px; overflow: hidden;">
+                                <div style="width: ${percentage}%; background-color: #3b82f6; height: 100%; border-radius: 4px; transition: width 0.5s ease;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                html += `<div style="margin-top: 15px; font-size: 0.8rem; color: #94a3b8; text-align: right;">키워드 유입 총 문의: ${totalWithKeyword}건</div>`;
+                
+                container.innerHTML = html;
             }
 
             window.updateQuoteStatus = async (id, status) => {
@@ -433,38 +504,115 @@
                 }
 
                 portfolios.forEach((p, index) => {
+                    let firstImage = p.image_data;
+                    let imageCount = 1;
+                    try {
+                        const parsed = JSON.parse(p.image_data);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            firstImage = parsed[0];
+                            imageCount = parsed.length;
+                        }
+                    } catch (e) {
+                        // 기존의 단일 Base64 문자열인 경우 그대로 사용
+                    }
+
                     const div = document.createElement('div');
                     div.className = 'portfolio-item';
                     div.innerHTML = `
-                        <img src="${p.image_data}" alt="${p.title}">
-                        <div style="margin-bottom:10px; display:flex; gap:5px; align-items:center;">
-                            <input type="text" id="title_${p.id}" value="${p.title}" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.9rem;">
-                            <button onclick="editPortfolioTitle('${p.id}')" class="btn-primary" style="padding:6px 10px; font-size:0.85rem; border-radius:4px;">저장</button>
+                        <div style="position: relative;">
+                            <img src="${firstImage}" alt="${p.title}">
+                            ${imageCount > 1 ? `<div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;"><i class="fa-regular fa-images"></i> ${imageCount}</div>` : ''}
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <input type="text" id="title_${p.id}" value="${p.title}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.9rem; box-sizing:border-box;">
+                        </div>
+                        <div style="margin-bottom:10px; font-size:0.8rem; color:#475569;">
+                            <input type="file" id="append_img_${p.id}" accept="image/*" multiple style="width:100%; font-size:0.75rem;">
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
                                 <button onclick="movePortfolio(${index}, 'up')" style="padding:4px 8px; cursor:pointer;" ${index === 0 ? 'disabled' : ''}>▲</button>
                                 <button onclick="movePortfolio(${index}, 'down')" style="padding:4px 8px; cursor:pointer;" ${index === portfolios.length - 1 ? 'disabled' : ''}>▼</button>
                             </div>
-                            <button onclick="deletePortfolio('${p.id}')" class="btn-danger">삭제</button>
+                            <div style="display:flex; gap:5px;">
+                                <button onclick="updatePortfolio('${p.id}')" id="update_btn_${p.id}" class="btn-primary" style="padding:6px 12px; font-size:0.85rem; border-radius:4px;">저장</button>
+                                <button onclick="deletePortfolio('${p.id}')" class="btn-danger" style="padding:6px 12px; font-size:0.85rem; border-radius:4px;">삭제</button>
+                            </div>
                         </div>
                     `;
                     list.appendChild(div);
                 });
             }
 
-            window.editPortfolioTitle = async (id) => {
+            window.updatePortfolio = async (id) => {
                 const newTitle = document.getElementById('title_' + id).value;
+                const fileInput = document.getElementById('append_img_' + id);
+                const btn = document.getElementById('update_btn_' + id);
+
                 if (!newTitle.trim()) {
                     alert('제목을 입력해주세요.');
                     return;
                 }
-                const { error } = await supabaseClient.from('portfolios').update({ title: newTitle }).eq('id', id);
-                if (error) {
-                    alert('제목 수정 중 오류가 발생했습니다.');
-                } else {
-                    alert('제목이 수정되었습니다.');
+
+                btn.innerText = '저장 중...';
+                btn.disabled = true;
+
+                try {
+                    // 1. 기존 데이터 가져오기
+                    const { data: pfData, error: fetchErr } = await supabaseClient
+                        .from('portfolios')
+                        .select('image_data')
+                        .eq('id', id)
+                        .single();
+                        
+                    if (fetchErr) throw fetchErr;
+
+                    let currentImages = [];
+                    try {
+                        const parsed = JSON.parse(pfData.image_data);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            currentImages = parsed;
+                        } else {
+                            currentImages = [pfData.image_data];
+                        }
+                    } catch (e) {
+                        currentImages = [pfData.image_data]; // 기존 단일 텍스트 데이터인 경우
+                    }
+
+                    // 2. 새 이미지 추가 처리
+                    if (fileInput.files.length > 0) {
+                        for (let i = 0; i < fileInput.files.length; i++) {
+                            const file = fileInput.files[i];
+                            const reader = new FileReader();
+                            await new Promise((resolve, reject) => {
+                                reader.onloadend = () => {
+                                    currentImages.push(reader.result);
+                                    resolve();
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(file);
+                            });
+                        }
+                    }
+                    
+                    const newImageData = JSON.stringify(currentImages);
+
+                    // 3. 업데이트 (제목 + 새로운 이미지 배열)
+                    const { error } = await supabaseClient
+                        .from('portfolios')
+                        .update({ title: newTitle, image_data: newImageData })
+                        .eq('id', id);
+                        
+                    if (error) throw error;
+                    
+                    alert('성공적으로 수정 및 사진이 추가되었습니다!');
                     loadPortfolios();
+                } catch (err) {
+                    console.error('Update Error:', err);
+                    alert('수정 중 오류가 발생했습니다: ' + err.message);
+                } finally {
+                    btn.innerText = '저장';
+                    btn.disabled = false;
                 }
             };
 
@@ -492,13 +640,32 @@
                 const fileInput = document.getElementById('pfImage');
                 if (fileInput.files.length === 0) return;
 
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onloadend = async () => {
-                    const base64String = reader.result;
+                // 등록 버튼 비활성화 (로딩 상태 표시)
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerText;
+                submitBtn.innerText = '이미지 처리 중...';
+                submitBtn.disabled = true;
+
+                try {
+                    const base64Images = [];
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        const file = fileInput.files[i];
+                        const reader = new FileReader();
+                        await new Promise((resolve, reject) => {
+                            reader.onloadend = () => {
+                                base64Images.push(reader.result);
+                                resolve();
+                            };
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file); // Convert to Base64
+                        });
+                    }
+                    
+                    const saveData = JSON.stringify(base64Images);
+
                     const { error } = await supabaseClient
                         .from('portfolios')
-                        .insert([{ title: title, image_data: base64String }]);
+                        .insert([{ title: title, image_data: saveData }]);
                     
                     if (!error) {
                         alert('시공 사례가 등록되었습니다.');
@@ -506,10 +673,15 @@
                         loadPortfolios();
                     } else {
                         console.error('Upload Error:', error);
-                        alert('등록 중 오류가 발생했습니다. 이미지 용량이 너무 큰지 확인해주세요.\n상세 에러: ' + error.message);
+                        alert('등록 중 오류가 발생했습니다. 여러 장의 이미지를 올릴 경우 총 용량이 너무 큰지 확인해주세요.\n상세 에러: ' + error.message);
                     }
-                };
-                reader.readAsDataURL(file); // Convert to Base64
+                } catch (error) {
+                    console.error('File Read Error:', error);
+                    alert('파일을 읽는 중 오류가 발생했습니다.');
+                } finally {
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                }
             });
 
             window.deletePortfolio = async (id) => {
