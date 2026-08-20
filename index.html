@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -922,7 +922,6 @@
                 if (submitBtn) submitBtn.removeAttribute('onclick');
 
                 quoteForm.addEventListener('submit', async (e) => {
-                    alert('안내: 새로운 스크립트가 정상적으로 작동 중입니다!');
                     // 수파베이스 저장이 중간에 끊기지 않도록 먼저 기본 동작을 막습니다.
                     e.preventDefault();
                     
@@ -958,11 +957,15 @@
             phoneLinks.forEach(link => {
                 link.addEventListener('click', async (e) => {
                     const phoneNum = link.getAttribute('href').replace('tel:', '');
+                    const keyword = sessionStorage.getItem('inflow_keyword');
+                    const baseMsg = '모바일에서 전화걸기 버튼을 클릭했습니다.';
+                    const finalMsg = keyword ? '[유입 키워드: ' + keyword + ']\n' + baseMsg : baseMsg;
+                    
                     await api.submitQuote({
                         name: '전화문의',
                         phone: phoneNum,
                         service: '빠른 전화 상담',
-                        message: '모바일에서 전화걸기 버튼을 클릭했습니다.',
+                        message: finalMsg,
                         status: '신규 접수'
                     });
                 });

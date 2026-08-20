@@ -89,7 +89,6 @@
             담당자가 확인한 후 최대한 빠르게 연락드리겠습니다.
         </p>
         <a href="index.html" class="btn-home">홈페이지로 돌아가기</a>
-        <div class="keyword-display" id="keywordDisplay"></div>
     </main>
 
     <footer class="footer">
@@ -100,13 +99,9 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // URL 파라미터에서 키워드 확인 (디버깅/안내용)
+            // URL 파라미터에서 키워드 확인
             const params = new URLSearchParams(window.location.search);
             const keyword = params.get('keyword');
-            if (keyword) {
-                // UI에 살짝 표시 (원치 않으면 제거 가능)
-                document.getElementById('keywordDisplay').innerText = `유입 경로: ${keyword}`;
-            }
 
             // 공통 로직 적용 (헤더 스크립트 등)
             if (typeof api !== 'undefined') {

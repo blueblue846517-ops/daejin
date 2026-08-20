@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -711,11 +711,15 @@
             telLinks.forEach(link => {
                 link.addEventListener('click', async (e) => {
                     const phoneNum = link.getAttribute('href').replace('tel:', '');
+                    const keyword = sessionStorage.getItem('inflow_keyword');
+                    const baseMsg = '웹사이트에서 전화 연결 버튼 클릭';
+                    const finalMsg = keyword ? '[유입 키워드: ' + keyword + ']\n' + baseMsg : baseMsg;
+
                     await api.submitQuote({
                         name: '전화문의',
                         phone: phoneNum,
                         service: '모바일 전화 바로걸기 (시공사례 페이지)',
-                        message: '웹사이트에서 전화 연결 버튼 클릭',
+                        message: finalMsg,
                         status: '전화 연결'
                     });
                 });
