@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="assets/css/admin.css">
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/supabase_init.js"></script>
+    <script src="assets/js/supabase_init.js?v=9"></script>
     <style>
         /* 추가 관리자 스타일 */
         .tab-content { display: none; }
@@ -237,6 +237,64 @@
                             <button type="submit" class="btn-primary">스크립트 설정 저장</button>
                         </form>
                     </section>
+                
+                    <section class="data-section">
+                        <div class="data-section-header">
+                            <h2>검색엔진 최적화 (SEO) 관리</h2>
+                        </div>
+                        <form id="seoForm" class="admin-form">
+                            <div class="form-group">
+                                <label for="seoTitle">홈페이지 기본 제목 (Title)</label>
+                                <input type="text" id="seoTitle" placeholder="예: 대진특수방수 - 옥상방수, 외벽방수 전문">
+                            </div>
+                            <div class="form-group">
+                                <label for="seoDesc">홈페이지 설명 (Meta Description)</label>
+                                <textarea id="seoDesc" rows="3" placeholder="예: 옥상, 외벽, 지하주차장 누수 완벽 차단..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="seoNaver">네이버 서치콘솔 소유확인 태그</label>
+                                <input type="text" id="seoNaver" placeholder="<meta name='naver-site-verification' content='...' />">
+                            </div>
+                            <div class="form-group">
+                                <label for="seoGoogle">구글 서치콘솔 소유확인 태그</label>
+                                <input type="text" id="seoGoogle" placeholder="<meta name='google-site-verification' content='...' />">
+                            </div>
+                            <button type="submit" class="btn-primary">SEO 설정 저장</button>
+                        </form>
+                    </section>
+
+                    <section class="data-section" style="margin-top: 40px;">
+                        <div class="data-section-header">
+                            <h2>알림톡 / 문자 발송 설정</h2>
+                        </div>
+                        <form id="smsForm" class="admin-form">
+                            <div class="form-group">
+                                <label for="smsProvider">API 연동 서비스 (선택)</label>
+                                <select id="smsProvider">
+                                    <option value="none">사용 안 함 (추후 연동 시 활성화)</option>
+                                    <option value="aligo">알리고 (Aligo)</option>
+                                    <option value="solapi">솔라피 (Solapi)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="smsApiKey">API Key</label>
+                                <input type="password" id="smsApiKey" placeholder="발급받은 API 키 입력 (보안 유의)">
+                            </div>
+                            <div class="form-group">
+                                <label for="smsSender">발신 번호</label>
+                                <input type="text" id="smsSender" placeholder="예: 010-1234-5678">
+                            </div>
+                            <div class="form-group">
+                                <label for="smsTemplateAdmin">관리자 수신용 템플릿</label>
+                                <textarea id="smsTemplateAdmin" rows="3" placeholder="[신규견적접수] 고객명: {name}, 지역: {region}"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="smsTemplateUser">고객 안내용 템플릿</label>
+                                <textarea id="smsTemplateUser" rows="3" placeholder="[대진특수방수] {name}님 견적이 정상 접수되었습니다."></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary">알림 설정 저장</button>
+                        </form>
+                    </section>
                 </div>
 
             </main>
@@ -312,9 +370,137 @@
                 });
             });
 
-            // ======================================================
+                        // ======================================================
             // SUPABASE DATA LOADING & MANAGEMENT
-            // ======================================================
+                        // ======================================================
+
+                        // --- Toast Notification ---
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.innerText = message;
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.right = '20px';
+                toast.style.backgroundColor = '#10b981';
+                toast.style.color = '#fff';
+                toast.style.padding = '12px 24px';
+                toast.style.borderRadius = '8px';
+                toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                toast.style.zIndex = '99999';
+                toast.style.transition = 'opacity 0.3s';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+            }
+
+            // --- Quote Details & Admin Note ---
+            window.openQuoteDetail = async (id) => {
+                const { data, error } = await supabaseClient.from('quotes').select('*').eq('id', id).single();
+                if (error || !data) return alert('데이터를 불러오지 못했습니다.');
+                
+                let infoHtml = '<p><strong>고객명/상호:</strong> ' + data.name + '</p>' +
+'<p><strong>연락처:</strong> ' + data.phone + '</p>' +
+'<p><strong>시공 항목:</strong> ' + data.service + '</p>' +
+'<p><strong>지역/주소:</strong> ' + (data.region || '미입력') + '</p>' +
+'<p><strong>상세 내용:</strong> ' + data.message + '</p>' +
+'<p><strong>접수 일시:</strong> ' + new Date(data.created_at).toLocaleString() + '</p>' +
+'<p><strong>현재 상태:</strong> <span class="status-badge">' + data.status + '</span> (최근 변경: ' + (data.status_updated_at ? new Date(data.status_updated_at).toLocaleString() : '-') + ')</p>';
+                document.getElementById('quoteDetailInfo').innerHTML = infoHtml;
+                document.getElementById('quoteAdminNote').value = data.admin_note || '';
+                
+                const historyUl = document.getElementById('quoteStatusHistory');
+                historyUl.innerHTML = '';
+                let history = [];
+                try { history = typeof data.status_history === 'string' ? JSON.parse(data.status_history) : (data.status_history || []); } catch(e){}
+                if (history.length === 0) {
+                    historyUl.innerHTML = '<li>변경 이력이 없습니다.</li>';
+                } else {
+                    history.forEach(h => {
+                        historyUl.innerHTML += '<li>[' + new Date(h.time).toLocaleString() + '] 상태 변경: <strong>' + h.status + '</strong></li>';
+                    });
+                }
+                
+                document.getElementById('saveQuoteNoteBtn').onclick = async () => {
+                    const note = document.getElementById('quoteAdminNote').value;
+                    const { error } = await supabaseClient.from('quotes').update({ admin_note: note }).eq('id', id);
+                    if(!error) {
+                        showToast('메모가 저장되었습니다.');
+                        document.getElementById('quoteDetailModal').style.display = 'none';
+                    } else {
+                        alert('저장 실패: ' + error.message);
+                    }
+                };
+                
+                document.getElementById('quoteDetailModal').style.display = 'flex';
+            };
+
+            // 상태 변경 덮어쓰기 (히스토리 추가 로직 포함)
+            window.updateQuoteStatus = async (id, status) => {
+                const { data: currentData } = await supabaseClient.from('quotes').select('status_history').eq('id', id).single();
+                let history = [];
+                if(currentData) {
+                    try { history = typeof currentData.status_history === 'string' ? JSON.parse(currentData.status_history) : (currentData.status_history || []); } catch(e){}
+                }
+                history.push({ status: status, time: new Date().toISOString() });
+                
+                const { error } = await supabaseClient.from('quotes').update({ 
+                    status: status, 
+                    status_history: history,
+                    status_updated_at: new Date().toISOString()
+                }).eq('id', id);
+                
+                if(!error) showToast('상태가 [' + status + ']로 변경되었습니다.');
+                loadQuotes();
+            };
+
+            // --- SEO 및 알림 설정 로드/저장 ---
+            async function loadSeoAndSmsSettings() {
+                const { data: settings } = await supabaseClient.from('settings').select('*');
+                if (settings) {
+                    settings.forEach(s => {
+                        if (s.setting_key === 'seo_title' && document.getElementById('seoTitle')) document.getElementById('seoTitle').value = s.setting_value;
+                        if (s.setting_key === 'seo_desc' && document.getElementById('seoDesc')) document.getElementById('seoDesc').value = s.setting_value;
+                        if (s.setting_key === 'seo_naver_verify' && document.getElementById('seoNaver')) document.getElementById('seoNaver').value = s.setting_value;
+                        if (s.setting_key === 'seo_google_verify' && document.getElementById('seoGoogle')) document.getElementById('seoGoogle').value = s.setting_value;
+                        
+                        if (s.setting_key === 'sms_provider' && document.getElementById('smsProvider')) document.getElementById('smsProvider').value = s.setting_value;
+                        if (s.setting_key === 'sms_api_key' && document.getElementById('smsApiKey')) document.getElementById('smsApiKey').value = s.setting_value;
+                        if (s.setting_key === 'sms_sender' && document.getElementById('smsSender')) document.getElementById('smsSender').value = s.setting_value;
+                        if (s.setting_key === 'sms_template_admin' && document.getElementById('smsTemplateAdmin')) document.getElementById('smsTemplateAdmin').value = s.setting_value;
+                        if (s.setting_key === 'sms_template_user' && document.getElementById('smsTemplateUser')) document.getElementById('smsTemplateUser').value = s.setting_value;
+                    });
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(loadSeoAndSmsSettings, 1000); // DB init 대기
+                
+                if(document.getElementById('seoForm')) {
+                    document.getElementById('seoForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.from('settings').upsert([
+                            { setting_key: 'seo_title', setting_value: document.getElementById('seoTitle').value },
+                            { setting_key: 'seo_desc', setting_value: document.getElementById('seoDesc').value },
+                            { setting_key: 'seo_naver_verify', setting_value: document.getElementById('seoNaver').value },
+                            { setting_key: 'seo_google_verify', setting_value: document.getElementById('seoGoogle').value }
+                        ]);
+                        showToast('SEO 설정이 저장되었습니다.');
+                    });
+                }
+
+                if(document.getElementById('smsForm')) {
+                    document.getElementById('smsForm').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        await supabaseClient.from('settings').upsert([
+                            { setting_key: 'sms_provider', setting_value: document.getElementById('smsProvider').value },
+                            { setting_key: 'sms_api_key', setting_value: document.getElementById('smsApiKey').value },
+                            { setting_key: 'sms_sender', setting_value: document.getElementById('smsSender').value },
+                            { setting_key: 'sms_template_admin', setting_value: document.getElementById('smsTemplateAdmin').value },
+                            { setting_key: 'sms_template_user', setting_value: document.getElementById('smsTemplateUser').value }
+                        ]);
+                        showToast('알림 발송 설정이 저장되었습니다.');
+                    });
+                }
+            });
 
             async function loadAdminData() {
                 loadQuotes();
@@ -332,14 +518,14 @@
 
                 if (error || !quotes) return;
 
-                document.getElementById('statNewQuotes').innerText = `${quotes.filter(q => q.status === '신규 접수' || q.status === '전화 연결').length} 건`;
+                document.getElementById('statNewQuotes').innerText = `${quotes.filter(q => q.status === '접수 대기' || q.status === '전화 연결').length} 건`;
 
-                const renderTable = (limit, targetId) => {
+                                const renderTable = (limit, targetId) => {
                     const tbody = document.getElementById(targetId);
                     tbody.innerHTML = '';
                     quotes.slice(0, limit).forEach(q => {
                         const date = new Date(q.created_at).toLocaleDateString();
-                        const isNew = (q.status === '신규 접수' || q.status === '전화 연결');
+                        const isNew = (q.status === '접수 대기' || q.status === '전화 연결');
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td><strong>${q.name}</strong></td>
@@ -351,14 +537,16 @@
                             <td>${date}</td>
                             <td><span class="status-badge ${isNew ? 'status-new' : 'status-done'}">${q.status}</span></td>
                             ${limit > 5 ? `<td>
-                                <select onchange="updateQuoteStatus('${q.id}', this.value)" style="padding:4px;">
-                                    <option value="신규 접수" ${q.status==='신규 접수'?'selected':''}>신규 접수</option>
-                                    <option value="전화 연결" ${q.status==='전화 연결'?'selected':''}>전화 연결</option>
-                                    <option value="상담 완료" ${q.status==='상담 완료'?'selected':''}>상담 완료</option>
-                                    <option value="시공 진행" ${q.status==='시공 진행'?'selected':''}>시공 진행</option>
+                                <select onchange="updateQuoteStatus('${q.id}', this.value)" style="padding:4px; max-width: 140px; font-size: 0.85rem;">
+                                    <option value="접수 대기" ${q.status === '접수 대기' ? 'selected' : ''}>접수 대기</option>
+                                    <option value="유선 상담 완료" ${q.status === '유선 상담 완료' ? 'selected' : ''}>유선 상담 완료</option>
+                                    <option value="현장 방문 견적 예정" ${q.status === '현장 방문 견적 예정' ? 'selected' : ''}>방문 견적 예정</option>
+                                    <option value="시공 확정" ${q.status === '시공 확정' ? 'selected' : ''}>시공 확정</option>
+                                    <option value="시공 완료" ${q.status === '시공 완료' ? 'selected' : ''}>시공 완료</option>
+                                    <option value="보증/사후관리(AS)" ${q.status === '보증/사후관리(AS)' ? 'selected' : ''}>사후관리(AS)</option>
                                 </select>
-                                <button onclick="deleteQuote('${q.id}')" class="btn-danger" style="margin-left:5px;">삭제</button>
-                            </td>` : ''}
+                                <button onclick="openQuoteDetail('${q.id}')" class="btn-secondary" style="margin-left:5px; padding: 4px 8px; font-size: 0.85rem;">상세·메모</button>
+                                </td>` : ''}
                         `;
                         tbody.appendChild(tr);
                     });
@@ -418,6 +606,60 @@
                                 <div style="width: ${percentage}%; background-color: #3b82f6; height: 100%; border-radius: 4px; transition: width 0.5s ease;"></div>
                             </div>
                         </div>
+                        <form id="seoForm" class="admin-form">
+                            <div class="form-group">
+                                <label for="seoTitle">홈페이지 기본 제목 (Title)</label>
+                                <input type="text" id="seoTitle" placeholder="예: 대진특수방수 - 옥상방수, 외벽방수 전문">
+                            </div>
+                            <div class="form-group">
+                                <label for="seoDesc">홈페이지 설명 (Meta Description)</label>
+                                <textarea id="seoDesc" rows="3" placeholder="예: 옥상, 외벽, 지하주차장 누수 완벽 차단..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="seoNaver">네이버 서치콘솔 소유확인 태그</label>
+                                <input type="text" id="seoNaver" placeholder="<meta name='naver-site-verification' content='...' />">
+                            </div>
+                            <div class="form-group">
+                                <label for="seoGoogle">구글 서치콘솔 소유확인 태그</label>
+                                <input type="text" id="seoGoogle" placeholder="<meta name='google-site-verification' content='...' />">
+                            </div>
+                            <button type="submit" class="btn-primary">SEO 설정 저장</button>
+                        </form>
+                    </section>
+
+                    <section class="data-section" style="margin-top: 40px;">
+                        <div class="data-section-header">
+                            <h2>알림톡 / 문자 발송 설정</h2>
+                        </div>
+                        <form id="smsForm" class="admin-form">
+                            <div class="form-group">
+                                <label for="smsProvider">API 연동 서비스 (선택)</label>
+                                <select id="smsProvider">
+                                    <option value="none">사용 안 함 (추후 연동 시 활성화)</option>
+                                    <option value="aligo">알리고 (Aligo)</option>
+                                    <option value="solapi">솔라피 (Solapi)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="smsApiKey">API Key</label>
+                                <input type="password" id="smsApiKey" placeholder="발급받은 API 키 입력 (보안 유의)">
+                            </div>
+                            <div class="form-group">
+                                <label for="smsSender">발신 번호</label>
+                                <input type="text" id="smsSender" placeholder="예: 010-1234-5678">
+                            </div>
+                            <div class="form-group">
+                                <label for="smsTemplateAdmin">관리자 수신용 템플릿</label>
+                                <textarea id="smsTemplateAdmin" rows="3" placeholder="[신규견적접수] 고객명: {name}, 지역: {region}"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="smsTemplateUser">고객 안내용 템플릿</label>
+                                <textarea id="smsTemplateUser" rows="3" placeholder="[대진특수방수] {name}님 견적이 정상 접수되었습니다."></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary">알림 설정 저장</button>
+                        </form>
+                    </section>
+                </div>
                     `;
                 });
                 
@@ -427,10 +669,7 @@
                 container.innerHTML = html;
             }
 
-            window.updateQuoteStatus = async (id, status) => {
-                await supabaseClient.from('quotes').update({ status }).eq('id', id);
-                loadQuotes();
-            };
+            /* old updateQuoteStatus removed */
 
             window.deleteQuote = async (id) => {
                 if(confirm('정말 삭제하시겠습니까?')) {
@@ -747,5 +986,32 @@
 
         });
     </script>
+    <!-- 견적 상세 및 메모 모달 -->
+    <div id="quoteDetailModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:#fff; width:90%; max-width:600px; border-radius:12px; padding:24px; position:relative; max-height:90vh; overflow-y:auto;">
+            <button onclick="document.getElementById('quoteDetailModal').style.display='none'" style="position:absolute; top:20px; right:24px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            <h2 style="margin-top:0; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">견적 상세 및 관리자 메모</h2>
+            
+            <div id="quoteDetailInfo" style="background:#f8fafc; padding:16px; border-radius:8px; margin-bottom:20px; font-size:0.95rem; line-height:1.6;">
+                <!-- 동적 렌더링 영역 -->
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3 style="font-size:1rem; margin-bottom:8px;">관리자 내부 메모 (고객에게 보이지 않습니다)</h3>
+                <textarea id="quoteAdminNote" style="width:100%; height:100px; padding:12px; border:1px solid #cbd5e1; border-radius:8px; resize:vertical; font-family:inherit;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3 style="font-size:1rem; margin-bottom:8px;">상태 변경 이력</h3>
+                <ul id="quoteStatusHistory" style="list-style:none; padding:0; font-size:0.85rem; color:#64748b; background:#f1f5f9; padding:12px; border-radius:8px; max-height:150px; overflow-y:auto;">
+                    <!-- 동적 렌더링 영역 -->
+                </ul>
+            </div>
+
+            <div style="text-align:right;">
+                <button id="saveQuoteNoteBtn" class="btn-primary" style="padding:10px 24px;">메모 저장</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

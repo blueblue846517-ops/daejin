@@ -1,0 +1,129 @@
+﻿Created At: 2026-08-20T23:04:28+09:00
+Completed At: 2026-08-20T23:04:28+09:00
+The following changes were made by the replace_file_content tool to: c:\Users\병서\Desktop\daejin\assets\js\script.js. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -307,55 +307,7 @@
+     // Close modal on background click
+     modals.forEach(modal => {
+         modal.addEventListener('click', (e) => {
+-            if (e.target === modal) {
+-                modal.classList.remove('active');
+-            }
+-        });
+-    });
+-}
+-
+-/**
+- * 6. Mobile Hamburger Menu Drawer
+- */
+-function initMobileMenu() {
+-    const mobileBtn = document.getElementById('mobileMenuBtn');
+-    const navList = document.querySelector('.nav-list');
+-    const navLinks = document.querySelectorAll('.nav-link');
+-
+-    if (!mobileBtn || !navList) return;
+-
+-    mobileBtn.addEventListener('click', () => {
+-        const isVisible = navList.style.display === 'flex';
+-        if (isVisible) {
+-            navList.style.display = 'none';
+-        } else {
+-            navList.style.display = 'flex';
+-            navList.style.flexDirection = 'column';
+-            navList.style.position = 'absolute';
+-            navList.style.top = '80px';
+-            navList.style.left = '0';
+-            navList.style.width = '100%';
+-            navList.style.background = '#ffffff';
+-            navList.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+-            navList.style.padding = '20px';
+-            navList.style.gap = '15px';
+-        }
+-    });
+-
+-    navLinks.forEach(link => {
+-        link.addEventListener('click', () => {
+-            if (window.innerWidth <= 768) {
+-                navList.style.display = 'none';
+-            }
+-        });
+-    });
+-}
+-
+-/**
+- * 7. Photo Gallery Carousel Lightbox (시공사례 사진 슬라이더)
+- */
+-function initPhotoGallery() {
+-    const triggers = document.querySelectorAll('.gallery-trigger');
++            if (e.target === mofunction initPhotoGallery() {
+     const modal = document.getElementById('photoGalleryModal');
+     const slideImg = document.getElementById('gallerySlideImg');
+     const counter = document.getElementById('galleryCounter');
+@@ -362,7 +362,7 @@
+     const prevBtn = document.getElementById('galleryPrevBtn');
+     const nextBtn = document.getElementById('galleryNextBtn');
+ 
+-    if (!triggers.length || !modal) return;
++    if (!modal) return;
+ 
+     let currentGallery = [];
+     let currentIndex = 0;
+@@ -381,6 +381,55 @@
+         }
+     }
+ 
++    // 동적으로 추가된 요소도 처리할 수 있도록 이벤트 위임 사용
++    document.addEventListener('click', (e) => {
++        const trigger = e.target.closest('.gallery-trigger');
++        if (!trigger) return;
++        
++        const data = trigger.getAttribute('data-gallery');
++        if (!data) return;
++        try {
++            currentGallery = JSON.parse(data);
++            if (currentGallery && currentGallery.length) {
++                currentIndex = 0;
++                showImage(currentIndex);
++                modal.classList.add('active');
++            }
++        } catch (err) {
++            console.error('Gallery JSON error:', err);
++        }
++    });
++
++    if (nextBtn) {
++        nextBtn.addEventListener('click', (e) => {
++            e.stopPropagation();
++            showImage(currentIndex + 1);
++        });
++    }
++
++    if (prevBtn) {
++        prevBtn.addEventListener('click', (e) => {
++            e.stopPropagation();
++            showImage(currentIndex - 1);
++        });
++    }
++
++    if (closeBtn) {
++        closeBtn.addEventListener('click', (e) => {
++            e.stopPropagation();
++            modal.classList.remove('active');
++        });
++    }
++}  setTimeout(() => {
++                slideImg.src = currentGallery[currentIndex];
++                slideImg.style.opacity = '1';
++            }, 100);
++        }
++        if (counter) {
++            counter.textContent = `${currentIndex + 1} / ${currentGallery.length}`;
++        }
++    }
++
+     triggers.forEach(trigger => {
+         trigger.addEventListener('click', () => {
+             const data = trigger.getAttribute('data-gallery');
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.

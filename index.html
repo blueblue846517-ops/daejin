@@ -840,11 +840,11 @@
     </div>
 
     <!-- Script Import -->
-    <script src="assets/js/script.js?v=2"></script>
+    <script src="assets/js/script.js?v=3"></script>
 
     <!-- Supabase SDK & Init -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/supabase_init.js"></script>
+    <script src="assets/js/supabase_init.js?v=10"></script>
     
     <!-- Supabase Integration for Index Page -->
     <!-- Supabase Integration for Index Page -->
@@ -918,7 +918,7 @@
             if (typeof supabaseClient !== 'undefined') {
                 const photoGrids = document.querySelectorAll('.photo-grid');
                 if (photoGrids.length > 0) {
-                    const { data: portfolios } = await supabaseClient.from('portfolios').select('*');
+                    const { data: portfolios } = await supabaseClient.from('portfolios').select('id, title, image_data, display_order, created_at').order('display_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false }).limit(16);
                     
                     if (portfolios && portfolios.length > 0) {
                         portfolios.sort((a, b) => {
