@@ -838,12 +838,12 @@
     
         <!-- Supabase Integration for Index Page -->
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             // 1. 공통 로직 실행 (방문자 기록, 설정 적용, 팝업 렌더링)
+            // 서로 의존관계가 없는 작업이므로 병렬로 실행하고, 아래 포트폴리오 로딩을 기다리게 하지 않는다.
             if (typeof api !== 'undefined') {
-                await api.trackVisitor();
-                await api.applySettings();
-                await api.renderPopup();
+                Promise.all([api.trackVisitor(), api.applySettings(), api.renderPopup()])
+                    .catch(err => console.error('공통 스크립트 실행 오류:', err));
             }
 
             // 2. 견적 폼 전송 이벤트 가로채기
@@ -898,54 +898,59 @@
             });
 
             // 4. 포트폴리오(시공 사례) 동적 렌더링
+            // 필요한 컬럼만, 화면에 보여줄 개수(16개)만 서버에서 바로 정렬해 가져온다.
+            // (예전에는 select('*')로 전체 행 + 전체 갤러리 이미지를 다 받아온 뒤 JS에서 16개로 잘랐음)
             const photoGrids = document.querySelectorAll('.photo-grid');
             if (photoGrids.length > 0 && typeof supabaseClient !== 'undefined') {
-                const { data: portfolios } = await supabaseClient.from('portfolios').select('*');
-                
-                if (portfolios && portfolios.length > 0) {
-                    portfolios.sort((a, b) => {
-                        const orderA = a.display_order !== undefined ? a.display_order : 999;
-                        const orderB = b.display_order !== undefined ? b.display_order : 999;
-                        if (orderA !== orderB) return orderA - orderB;
-                        return new Date(b.created_at) - new Date(a.created_at);
-                    });
+                (async () => {
+                    const { data: portfolios, error } = await supabaseClient
+                        .from('portfolios')
+                        .select('title, image_data, display_order, created_at')
+                        .order('display_order', { ascending: true, nullsFirst: false })
+                        .order('created_at', { ascending: false })
+                        .limit(16);
 
-                    photoGrids.forEach(grid => {
-                        grid.innerHTML = ''; // 기존 자리표시자 제거
-                        // 최대 16개까지만 메인 화면에 렌더링
-                        const displayItems = portfolios.slice(0, 16);
-                        displayItems.forEach(item => {
-                            let galleryArr = [item.image_data];
-                            let firstImage = item.image_data;
-                            try {
-                                const parsed = JSON.parse(item.image_data);
-                                if (Array.isArray(parsed) && parsed.length > 0) {
-                                    galleryArr = parsed;
-                                    firstImage = parsed[0];
-                                }
-                            } catch(e) { }
+                    if (error) {
+                        console.error('포트폴리오 로딩 오류:', error);
+                        return;
+                    }
 
-                            const card = document.createElement('div');
-                            card.className = 'photo-card gallery-trigger';
-                            card.style.cursor = 'pointer';
-                            card.setAttribute('data-gallery', JSON.stringify(galleryArr));
-                            
-                            card.innerHTML = `
-                                <img src="${firstImage}" alt="${item.title}">
-                                <div class="album-badge">
-                                    <i class="fa-solid fa-camera"></i>
-                                    <span style="margin-left: 5px; font-weight: bold; font-size: 0.9rem;">${item.title}</span>
-                                </div>
-                            `;
-                            grid.appendChild(card);
+                    if (portfolios && portfolios.length > 0) {
+                        photoGrids.forEach(grid => {
+                            grid.innerHTML = ''; // 기존 자리표시자 제거
+                            portfolios.forEach(item => {
+                                let galleryArr = [item.image_data];
+                                let firstImage = item.image_data;
+                                try {
+                                    const parsed = JSON.parse(item.image_data);
+                                    if (Array.isArray(parsed) && parsed.length > 0) {
+                                        galleryArr = parsed;
+                                        firstImage = parsed[0];
+                                    }
+                                } catch(e) { }
+
+                                const card = document.createElement('div');
+                                card.className = 'photo-card gallery-trigger';
+                                card.style.cursor = 'pointer';
+                                card.setAttribute('data-gallery', JSON.stringify(galleryArr));
+
+                                card.innerHTML = `
+                                    <img src="${firstImage}" alt="${item.title}" loading="lazy">
+                                    <div class="album-badge">
+                                        <i class="fa-solid fa-camera"></i>
+                                        <span style="margin-left: 5px; font-weight: bold; font-size: 0.9rem;">${item.title}</span>
+                                    </div>
+                                `;
+                                grid.appendChild(card);
+                            });
                         });
-                    });
-                } else {
-                    // 데이터가 없을 경우
-                    photoGrids.forEach(grid => {
-                        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 50px 0; font-size: 0.9rem;">등록된 시공 사례가 없습니다.</div>';
-                    });
-                }
+                    } else {
+                        // 데이터가 없을 경우
+                        photoGrids.forEach(grid => {
+                            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 50px 0; font-size: 0.9rem;">등록된 시공 사례가 없습니다.</div>';
+                        });
+                    }
+                })();
             }
         });
     </script>
