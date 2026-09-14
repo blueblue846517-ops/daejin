@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -247,59 +247,10 @@
                         <div class="data-section-header">
                             <h2>검색엔진 최적화 (SEO) 관리</h2>
                         </div>
-                        <form id="seoForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="seoTitle">홈페이지 기본 제목 (Title)</label>
-                                <input type="text" id="seoTitle" placeholder="예: 대진특수방수 - 옥상방수, 외벽방수 전문">
-                            </div>
-                            <div class="form-group">
-                                <label for="seoDesc">홈페이지 설명 (Meta Description)</label>
-                                <textarea id="seoDesc" rows="3" placeholder="예: 옥상, 외벽, 지하주차장 누수 완벽 차단..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="seoNaver">네이버 서치콘솔 소유확인 태그</label>
-                                <input type="text" id="seoNaver" placeholder="<meta name='naver-site-verification' content='...' />">
-                            </div>
-                            <div class="form-group">
-                                <label for="seoGoogle">구글 서치콘솔 소유확인 태그</label>
-                                <input type="text" id="seoGoogle" placeholder="<meta name='google-site-verification' content='...' />">
-                            </div>
-                            <button type="submit" class="btn-primary">SEO 설정 저장</button>
-                        </form>
+                        
                     </section>
 
-                    <section class="data-section" style="margin-top: 40px;">
-                        <div class="data-section-header">
-                            <h2>알림톡 / 문자 발송 설정</h2>
-                        </div>
-                        <form id="smsForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="smsProvider">API 연동 서비스 (선택)</label>
-                                <select id="smsProvider">
-                                    <option value="none">사용 안 함 (추후 연동 시 활성화)</option>
-                                    <option value="aligo">알리고 (Aligo)</option>
-                                    <option value="solapi">솔라피 (Solapi)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="smsApiKey">API Key</label>
-                                <input type="password" id="smsApiKey" placeholder="발급받은 API 키 입력 (보안 유의)">
-                            </div>
-                            <div class="form-group">
-                                <label for="smsSender">발신 번호</label>
-                                <input type="text" id="smsSender" placeholder="예: 010-1234-5678">
-                            </div>
-                            <div class="form-group">
-                                <label for="smsTemplateAdmin">관리자 수신용 템플릿</label>
-                                <textarea id="smsTemplateAdmin" rows="3" placeholder="[신규견적접수] 고객명: {name}, 지역: {region}"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="smsTemplateUser">고객 안내용 템플릿</label>
-                                <textarea id="smsTemplateUser" rows="3" placeholder="[대진특수방수] {name}님 견적이 정상 접수되었습니다."></textarea>
-                            </div>
-                            <button type="submit" class="btn-primary">알림 설정 저장</button>
-                        </form>
-                    </section>
+                    
                 </div>
 
             </main>
@@ -622,59 +573,10 @@
                                 <div style="width: ${percentage}%; background-color: #3b82f6; height: 100%; border-radius: 4px; transition: width 0.5s ease;"></div>
                             </div>
                         </div>
-                        <form id="seoForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="seoTitle">홈페이지 기본 제목 (Title)</label>
-                                <input type="text" id="seoTitle" placeholder="예: 대진특수방수 - 옥상방수, 외벽방수 전문">
-                            </div>
-                            <div class="form-group">
-                                <label for="seoDesc">홈페이지 설명 (Meta Description)</label>
-                                <textarea id="seoDesc" rows="3" placeholder="예: 옥상, 외벽, 지하주차장 누수 완벽 차단..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="seoNaver">네이버 서치콘솔 소유확인 태그</label>
-                                <input type="text" id="seoNaver" placeholder="<meta name='naver-site-verification' content='...' />">
-                            </div>
-                            <div class="form-group">
-                                <label for="seoGoogle">구글 서치콘솔 소유확인 태그</label>
-                                <input type="text" id="seoGoogle" placeholder="<meta name='google-site-verification' content='...' />">
-                            </div>
-                            <button type="submit" class="btn-primary">SEO 설정 저장</button>
-                        </form>
+                        
                     </section>
 
-                    <section class="data-section" style="margin-top: 40px;">
-                        <div class="data-section-header">
-                            <h2>알림톡 / 문자 발송 설정</h2>
-                        </div>
-                        <form id="smsForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="smsProvider">API 연동 서비스 (선택)</label>
-                                <select id="smsProvider">
-                                    <option value="none">사용 안 함 (추후 연동 시 활성화)</option>
-                                    <option value="aligo">알리고 (Aligo)</option>
-                                    <option value="solapi">솔라피 (Solapi)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="smsApiKey">API Key</label>
-                                <input type="password" id="smsApiKey" placeholder="발급받은 API 키 입력 (보안 유의)">
-                            </div>
-                            <div class="form-group">
-                                <label for="smsSender">발신 번호</label>
-                                <input type="text" id="smsSender" placeholder="예: 010-1234-5678">
-                            </div>
-                            <div class="form-group">
-                                <label for="smsTemplateAdmin">관리자 수신용 템플릿</label>
-                                <textarea id="smsTemplateAdmin" rows="3" placeholder="[신규견적접수] 고객명: {name}, 지역: {region}"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="smsTemplateUser">고객 안내용 템플릿</label>
-                                <textarea id="smsTemplateUser" rows="3" placeholder="[대진특수방수] {name}님 견적이 정상 접수되었습니다."></textarea>
-                            </div>
-                            <button type="submit" class="btn-primary">알림 설정 저장</button>
-                        </form>
-                    </section>
+                    
                 </div>
                     `;
                 });
@@ -1031,3 +933,4 @@
     </div>
 </body>
 </html>
+
