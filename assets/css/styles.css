@@ -808,7 +808,7 @@ button {
 }
 
 .area-card {
-    width: calc(25% - 18px);
+    width: calc(33.333% - 16px);
     background: var(--color-white);
     border-radius: 0;
     overflow: hidden;
@@ -827,7 +827,7 @@ button {
 
 .area-img-box {
     width: 100%;
-    height: 230px;
+    height: 400px;
     overflow: hidden;
     background-color: #e2e8f0;
     position: relative;
@@ -842,6 +842,53 @@ button {
 
 .area-card:hover .area-img-box img {
     transform: scale(1.08);
+}
+
+.area-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(21, 128, 61, 0.85); /* var(--color-primary) */
+    color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    text-align: center;
+    z-index: 2;
+}
+
+.area-card:hover .area-hover-overlay {
+    opacity: 1;
+}
+
+.hover-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
+    color: var(--color-white);
+}
+
+.hover-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
+    transition-delay: 0.05s;
+    color: rgba(255, 255, 255, 0.95);
+    word-break: keep-all;
+}
+
+.area-card:hover .hover-title,
+.area-card:hover .hover-desc {
+    transform: translateY(0);
 }
 
 .area-title-box {
@@ -1281,10 +1328,19 @@ button {
 .footer-legal-links {
     display: flex;
     gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .footer-legal-links a {
     color: #475569;
+}
+
+.admin-footer-link {
+    color: inherit;
+    opacity: 0.6;
+    text-decoration: none;
+    font-size: 0.8rem;
 }
 
 /* ==========================================================================
@@ -1774,6 +1830,14 @@ button {
         gap: 16px;
         text-align: center;
     }
+    .footer-legal-links {
+        justify-content: center;
+    }
+    .admin-footer-link {
+        flex-basis: 100%;
+        text-align: center;
+        margin-top: 4px;
+    }
     .fab-container {
         right: 12px !important;
         top: 50% !important;
@@ -1790,4 +1854,14 @@ button {
     .fab-top {
         display: none !important;
     }
+    .mobile-break {
+        display: block !important;
+    }
+    .desktop-only {
+        display: none !important;
+    }
+}
+
+.mobile-break {
+    display: none;
 }
