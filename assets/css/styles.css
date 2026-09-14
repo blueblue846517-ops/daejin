@@ -1723,6 +1723,50 @@ button {
     background: var(--color-primary-light);
 }
 
+/* ==========================================================================
+   ABOUT PAGE STYLES (회사소개 페이지)
+   ========================================================================== */
+.about-benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+.benefit-card {
+    background: #f8fafc;
+    padding: 40px;
+    border-radius: 0;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.benefit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+.benefit-card .b-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+.benefit-card .b-icon.c-brand { background: #dcfce7; color: var(--color-primary); }
+.benefit-card h4 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+.benefit-card p {
+    color: #475569;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+
 @media (max-width: 768px) {
     .pc-only {
         display: none !important;
@@ -1738,17 +1782,17 @@ button {
         height: 26px !important;
     }
     .logo-title {
-        font-size: 1.1rem !important;
+        font-size: 0.95rem !important;
         white-space: nowrap !important;
     }
     .btn-phone {
-        gap: 4px !important;
+        gap: 3px !important;
     }
     .btn-phone i {
-        font-size: 1rem !important;
+        font-size: 0.85rem !important;
     }
     .btn-phone span {
-        font-size: 1rem !important;
+        font-size: 0.85rem !important;
         white-space: nowrap !important;
     }
     .nav-list {
@@ -1765,6 +1809,10 @@ button {
     }
     .hero-subtitle {
         font-size: 1.1rem;
+    }
+    .section-title {
+        font-size: 1.8rem;
+        word-break: keep-all;
     }
     .hero-buttons {
         flex-direction: column;
@@ -1859,6 +1907,26 @@ button {
     }
     .desktop-only {
         display: none !important;
+    }
+
+    /* About Page Mobile */
+    .about-benefits-grid {
+        grid-template-columns: 1fr;
+    }
+    .about-hero h1 {
+        font-size: 2.2rem !important;
+    }
+    .about-intro h2 {
+        font-size: 1.8rem !important;
+    }
+    .about-vision h3 {
+        font-size: 1.6rem !important;
+    }
+    .about-vision .vision-banner h4 {
+        font-size: 2rem !important;
+    }
+    .about-benefits h2 {
+        font-size: 1.6rem !important;
     }
 }
 
