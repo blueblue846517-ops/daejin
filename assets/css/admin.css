@@ -124,9 +124,33 @@ body {
     letter-spacing: 1px;
 }
 
+.sidebar-menu-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+
 .sidebar-nav {
     flex: 1;
     padding: 20px 0;
+    overflow-y: auto;
+}
+
+/* 스크롤바 스타일링 (선택사항, 웹킷 브라우저용) */
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); 
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2); 
+    border-radius: 3px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3); 
 }
 
 .sidebar-nav a {
