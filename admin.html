@@ -577,14 +577,19 @@
                 if(document.getElementById('seoForm')) {
                     document.getElementById('seoForm').addEventListener('submit', async (e) => {
                         e.preventDefault();
-                        await supabaseClient.from('settings').upsert([
+                        const { error } = await supabaseClient.from('settings').upsert([
                             { setting_key: 'seo_title', setting_value: document.getElementById('seoTitle') ? document.getElementById('seoTitle').value : '' },
                             { setting_key: 'seo_desc', setting_value: document.getElementById('seoDesc') ? document.getElementById('seoDesc').value : '' },
                             { setting_key: 'seo_keywords', setting_value: document.getElementById('seoKeywords') ? document.getElementById('seoKeywords').value : '' },
                             { setting_key: 'ga_measurement_id', setting_value: document.getElementById('seoGoogleAnalytics') ? document.getElementById('seoGoogleAnalytics').value : '' },
                             { setting_key: 'kakao_js_key', setting_value: document.getElementById('seoKakaoJSKey') ? document.getElementById('seoKakaoJSKey').value : '' }
                         ]);
-                        showToast('SEO 설정이 저장되었습니다.');
+                        if (error) {
+                            alert('SEO 설정 저장 중 오류가 발생했습니다: ' + error.message);
+                        } else {
+                            alert('SEO 설정이 데이터베이스에 저장되었습니다.\n\n(참고: 네이버 등 검색엔진 최적화를 위해서는 이 내용이 index.html 파일 원본에 직접 작성되어야 확실하게 적용됩니다.)');
+                            showToast('SEO 설정이 저장되었습니다.');
+                        }
                     });
                 }
 
