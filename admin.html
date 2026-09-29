@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="assets/css/admin.css">
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/supabase_init.js?v=9"></script>
+    <script src="assets/js/supabase_init.js?v=10"></script>
     <style>
         /* 추가 관리자 스타일 */
         .tab-content { display: none; }
@@ -265,6 +265,7 @@
                         <div class="data-section-header">
                             <h2>검색엔진 최적화 (SEO) 관리</h2>
                         </div>
+                        <p style="color:#64748b; font-size:0.9rem; line-height:1.6; margin:0 0 16px;">제목과 설명은 저장 후 홈페이지에 동적으로 적용됩니다. 검색엔진이 확실히 읽을 수 있도록 하려면 index.html의 메타 정보도 수정해 배포해야 합니다. Google Analytics ID를 입력하면 방문 측정 태그가 연결됩니다.</p>
                         <form id="seoForm">
                             <div class="form-group">
                                 <label>메타 타이틀 (Meta Title)</label>
@@ -420,8 +421,13 @@
 
             // 로그아웃 버튼
             document.getElementById('logoutBtn').addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
+                sessionStorage.removeItem('adminLoggedIn');
                 sessionStorage.removeItem('admin_logged_in');
+                try {
+                    await supabaseClient.auth.signOut();
+                } catch (error) {
+                    console.error('Admin sign-out failed:', error);
+                }
                 location.reload();
             });
 
@@ -463,6 +469,9 @@
                     
                     // Update title
                     document.getElementById('pageTitle').innerText = link.innerText;
+                    if (targetId === 'tab-analytics') loadAnalytics();
+                    if (targetId === 'tab-seo') loadSeoAndSmsSettings();
+                    if (targetId === 'tab-tracking') loadSettingsAndPopups();
                 });
             });
 
@@ -471,6 +480,10 @@
                         // ======================================================
 
                         // --- Toast Notification ---
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' }[char]));
+            }
+
             function showToast(message) {
                 const toast = document.createElement('div');
                 toast.innerText = message;
@@ -571,42 +584,47 @@
                 }
             }
             
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(loadSeoAndSmsSettings, 1000); // DB init 대기
-                
-                if(document.getElementById('seoForm')) {
-                    document.getElementById('seoForm').addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const { error } = await supabaseClient.from('settings').upsert([
-                            { setting_key: 'seo_title', setting_value: document.getElementById('seoTitle') ? document.getElementById('seoTitle').value : '' },
-                            { setting_key: 'seo_desc', setting_value: document.getElementById('seoDesc') ? document.getElementById('seoDesc').value : '' },
-                            { setting_key: 'seo_keywords', setting_value: document.getElementById('seoKeywords') ? document.getElementById('seoKeywords').value : '' },
-                            { setting_key: 'ga_measurement_id', setting_value: document.getElementById('seoGoogleAnalytics') ? document.getElementById('seoGoogleAnalytics').value : '' },
-                            { setting_key: 'kakao_js_key', setting_value: document.getElementById('seoKakaoJSKey') ? document.getElementById('seoKakaoJSKey').value : '' }
-                        ]);
-                        if (error) {
-                            alert('SEO 설정 저장 중 오류가 발생했습니다: ' + error.message);
-                        } else {
-                            alert('SEO 설정이 데이터베이스에 저장되었습니다.\n\n(참고: 네이버 등 검색엔진 최적화를 위해서는 이 내용이 index.html 파일 원본에 직접 작성되어야 확실하게 적용됩니다.)');
-                            showToast('SEO 설정이 저장되었습니다.');
-                        }
-                    });
-                }
+            // DOMContentLoaded 바깥에서 현재 화면에 저장 이벤트를 연결합니다.
+            // 이 스크립트는 DOMContentLoaded 이후 실행되므로 이벤트를 다시 기다리면 폼이 작동하지 않습니다.
+            setTimeout(loadSeoAndSmsSettings, 1000);
 
-                if(document.getElementById('smsForm')) {
-                    document.getElementById('smsForm').addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        await supabaseClient.from('settings').upsert([
-                            { setting_key: 'sms_provider', setting_value: document.getElementById('smsProvider').value },
-                            { setting_key: 'sms_api_key', setting_value: document.getElementById('smsApiKey').value },
-                            { setting_key: 'sms_sender', setting_value: document.getElementById('smsSender').value },
-                            { setting_key: 'sms_template_admin', setting_value: document.getElementById('smsTemplateAdmin').value },
-                            { setting_key: 'sms_template_user', setting_value: document.getElementById('smsTemplateUser').value }
-                        ]);
-                        showToast('알림 발송 설정이 저장되었습니다.');
-                    });
-                }
-            });
+            const seoForm = document.getElementById('seoForm');
+            if (seoForm) {
+                seoForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const { error } = await supabaseClient.from('settings').upsert([
+                        { setting_key: 'seo_title', setting_value: document.getElementById('seoTitle').value },
+                        { setting_key: 'seo_desc', setting_value: document.getElementById('seoDesc').value },
+                        { setting_key: 'seo_keywords', setting_value: document.getElementById('seoKeywords').value },
+                        { setting_key: 'ga_measurement_id', setting_value: document.getElementById('seoGoogleAnalytics').value },
+                        { setting_key: 'kakao_js_key', setting_value: document.getElementById('seoKakaoJSKey').value }
+                    ]);
+                    if (error) {
+                        alert('SEO 설정 저장 중 오류가 발생했습니다: ' + error.message);
+                        return;
+                    }
+                    showToast('SEO 설정이 저장되었습니다. 검색 결과에 반영되기까지는 시간이 걸릴 수 있습니다.');
+                });
+            }
+
+            const smsForm = document.getElementById('smsForm');
+            if (smsForm) {
+                smsForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const { error } = await supabaseClient.from('settings').upsert([
+                        { setting_key: 'sms_provider', setting_value: document.getElementById('smsProvider').value },
+                        { setting_key: 'sms_api_key', setting_value: document.getElementById('smsApiKey').value },
+                        { setting_key: 'sms_sender', setting_value: document.getElementById('smsSender').value },
+                        { setting_key: 'sms_template_admin', setting_value: document.getElementById('smsTemplateAdmin').value },
+                        { setting_key: 'sms_template_user', setting_value: document.getElementById('smsTemplateUser').value }
+                    ]);
+                    if (error) {
+                        alert('문자 설정 저장 중 오류가 발생했습니다: ' + error.message);
+                        return;
+                    }
+                    showToast('알림 발송 설정이 저장되었습니다.');
+                });
+            }
 
             async function loadAdminData() {
                 loadQuotes();
@@ -742,15 +760,16 @@
                 const { data: visitors, error } = await supabaseClient.from('visitors').select('*');
                 if (error || !visitors) return;
 
-                const today = new Date().toISOString().split('T')[0];
+                const today = api.getSeoulDateString();
                 const todayData = visitors.find(v => v.visit_date === today);
                 document.getElementById('statTodayVisits').innerText = `${todayData ? todayData.visit_count : 0} 명`;
 
                 // Calculate this week
                 const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
+                weekAgo.setDate(weekAgo.getDate() - 6);
+                const weekStart = api.getSeoulDateString(weekAgo);
                 const weekVisits = visitors
-                    .filter(v => new Date(v.visit_date) >= weekAgo)
+                    .filter(v => v.visit_date >= weekStart && v.visit_date <= today)
                     .reduce((sum, v) => sum + v.visit_count, 0);
                 document.getElementById('statWeekVisits').innerText = `${weekVisits} 명`;
             }
@@ -1023,14 +1042,18 @@
                 const googleVerify = document.getElementById('seoGoogle').value;
                 const naverVerify = document.getElementById('seoNaver').value;
 
-                await supabaseClient.from('settings').upsert([
+                const { error } = await supabaseClient.from('settings').upsert([
                     { setting_key: 'head_script', setting_value: head },
                     { setting_key: 'body_script', setting_value: body },
                     { setting_key: 'conversion_script', setting_value: conv },
                     { setting_key: 'seo_google_verify', setting_value: googleVerify },
                     { setting_key: 'seo_naver_verify', setting_value: naverVerify }
                 ]);
-                alert('스크립트 설정이 저장되었습니다.');
+                if (error) {
+                    alert('스크립트 설정 저장 중 오류가 발생했습니다: ' + error.message);
+                    return;
+                }
+                showToast('스크립트 설정이 저장되었습니다.');
             });
 
             document.getElementById('popupForm').addEventListener('submit', async (e) => {
@@ -1052,12 +1075,23 @@
             // --- Analytics & IP Blocking ---
             async function loadAnalytics() {
                 // 1. Inflow Stats
-                const { data: logs, error: logsError } = await supabaseClient
-                    .from('visit_logs')
-                    .select('path, ip, created_at')
-                    .order('created_at', { ascending: false });
+                const logs = [];
+                let logsError = null;
+                for (let start = 0; ; start += 1000) {
+                    const { data: batch, error } = await supabaseClient
+                        .from('visit_logs')
+                        .select('path, ip, created_at')
+                        .order('created_at', { ascending: false })
+                        .range(start, start + 999);
+                    if (error) {
+                        logsError = error;
+                        break;
+                    }
+                    logs.push(...(batch || []));
+                    if (!batch || batch.length < 1000) break;
+                }
 
-                if (!logsError && logs) {
+                if (!logsError) {
                     // 유입경로 집계
                     const pathCounts = {};
                     // 다접속 IP 집계
@@ -1087,7 +1121,7 @@
                     } else {
                         sortedPaths.forEach(([path, count]) => {
                             inflowTbody.innerHTML += `<tr>
-                                <td>${path}</td>
+                                <td>${escapeHtml(path)}</td>
                                 <td>${count}회</td>
                             </tr>`;
                         });
@@ -1105,9 +1139,9 @@
                     } else {
                         sortedIps.slice(0, 50).forEach(([ip, stat]) => {
                             multiIpTbody.innerHTML += `<tr>
-                                <td><strong>${ip}</strong></td>
+                                <td><strong>${escapeHtml(ip)}</strong></td>
                                 <td>${stat.count}회</td>
-                                <td>${new Date(stat.last_visit).toLocaleString()}</td>
+                                <td>${new Date(stat.last_visit).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td>
                                 <td>
                                     <button onclick="blockIp('${ip}')" class="btn-danger" style="padding: 4px 8px; font-size: 0.85rem;">차단하기</button>
                                 </td>
@@ -1133,9 +1167,9 @@
                     } else {
                         blocked.forEach(b => {
                             blockedTbody.innerHTML += `<tr>
-                                <td><strong>${b.ip}</strong></td>
-                                <td>${new Date(b.created_at).toLocaleString()}</td>
-                                <td>${b.memo || '-'}</td>
+                                <td><strong>${escapeHtml(b.ip)}</strong></td>
+                                <td>${new Date(b.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td>
+                                <td>${escapeHtml(b.memo || '-')}</td>
                                 <td>
                                     <button onclick="unblockIp('${b.ip}')" class="btn-primary" style="padding: 4px 8px; font-size: 0.85rem;">차단 해제</button>
                                 </td>

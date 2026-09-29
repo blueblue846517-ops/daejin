@@ -5,12 +5,40 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Supabase 클라이언트 전역 인스턴스
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// 한국 시간대 기준 날짜 문자열(YYYY-MM-DD)
+function getSeoulDateString(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+// 설정에 저장된 HTML에서 script 요소를 새로 만들어 실제로 실행되게 삽입합니다.
+function appendConfiguredMarkup(target, html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    for (const node of Array.from(template.content.childNodes)) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'SCRIPT') {
+            const script = document.createElement('script');
+            for (const attribute of Array.from(node.attributes)) script.setAttribute(attribute.name, attribute.value);
+            if (script.src && !node.hasAttribute('async') && !node.hasAttribute('defer')) script.async = false;
+            script.textContent = node.textContent;
+            target.appendChild(script);
+        } else {
+            target.appendChild(node);
+        }
+    }
+}
+
 // 공통 유틸리티 기능
 const api = {
+    getSeoulDateString,
+
     // 1. 방문자 통계 업데이트
     trackVisitor: async () => {
-        // 이미 오늘 방문한 경우 세션 체크 (단순 방지)
-        if (sessionStorage.getItem('visited_today')) return;
+        const today = getSeoulDateString();
+        if (sessionStorage.getItem('visited_today') === today) return;
         
         let ip = null;
         try {
@@ -22,7 +50,7 @@ const api = {
         }
 
         if (ip) {
-            const { data: blocked } = await supabaseClient.from('blocked_ips').select('ip').eq('ip', ip).single();
+            const { data: blocked } = await supabaseClient.from('blocked_ips').select('ip').eq('ip', ip).maybeSingle();
             if (blocked) {
                 document.body.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100vh; background:#f1f5f9; color:#334155; font-family:sans-serif;"><h1>접근이 차단되었습니다.</h1></div>';
                 return;
@@ -56,25 +84,31 @@ const api = {
         }
 
         if (ip && inflowPath !== '내부 이동') {
-            await supabaseClient.from('visit_logs').insert([{ ip: ip, path: inflowPath, referrer: document.referrer }]);
+            const { error: logError } = await supabaseClient.from('visit_logs').insert([{ ip: ip, path: inflowPath, referrer: document.referrer }]);
+            if (logError) console.error('Visit log save failed:', logError.message);
         }
 
         if (inflowPath !== '내부 이동') {
-            const today = new Date().toISOString().split('T')[0];
-            const { data: existing } = await supabaseClient
+            const { data: existing, error: readError } = await supabaseClient
                 .from('visitors')
                 .select('visit_count')
                 .eq('visit_date', today)
-                .single();
+                .maybeSingle();
+            if (readError) {
+                console.error('Visitor count read failed:', readError.message);
+                return;
+            }
 
-            if (existing) {
-                await supabaseClient.from('visitors').update({ visit_count: existing.visit_count + 1 }).eq('visit_date', today);
-            } else {
-                await supabaseClient.from('visitors').insert([{ visit_date: today, visit_count: 1 }]);
+            const result = existing
+                ? await supabaseClient.from('visitors').update({ visit_count: existing.visit_count + 1 }).eq('visit_date', today)
+                : await supabaseClient.from('visitors').insert([{ visit_date: today, visit_count: 1 }]);
+            if (result.error) {
+                console.error('Visitor count save failed:', result.error.message);
+                return;
             }
         }
-        
-        sessionStorage.setItem('visited_today', 'true');
+
+        sessionStorage.setItem('visited_today', today);
     },
 
     // 2. 견적 문의 폼 접수
@@ -92,9 +126,9 @@ const api = {
 
         settings.forEach(setting => {
             if (setting.setting_key === 'head_script' && setting.setting_value) {
-                document.head.insertAdjacentHTML('beforeend', setting.setting_value);
+                appendConfiguredMarkup(document.head, setting.setting_value);
             } else if (setting.setting_key === 'body_script' && setting.setting_value) {
-                document.body.insertAdjacentHTML('beforeend', setting.setting_value);
+                appendConfiguredMarkup(document.body, setting.setting_value);
             } else if (setting.setting_key === 'seo_title' && setting.setting_value) {
                 document.title = setting.setting_value;
                 const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -150,21 +184,29 @@ const api = {
                     document.head.appendChild(kakaoScript);
                 }
             } else if (setting.setting_key === 'seo_google_verify' && setting.setting_value) {
+                let val = setting.setting_value;
+                const match = val.match(/content=["']([^"']+)["']/i);
+                if (match) val = match[1];
+
                 let metaGoogle = document.querySelector('meta[name="google-site-verification"]');
                 if (!metaGoogle) {
                     metaGoogle = document.createElement('meta');
                     metaGoogle.name = "google-site-verification";
                     document.head.appendChild(metaGoogle);
                 }
-                metaGoogle.content = setting.setting_value;
+                metaGoogle.content = val;
             } else if (setting.setting_key === 'seo_naver_verify' && setting.setting_value) {
+                let val = setting.setting_value;
+                const match = val.match(/content=["']([^"']+)["']/i);
+                if (match) val = match[1];
+
                 let metaNaver = document.querySelector('meta[name="naver-site-verification"]');
                 if (!metaNaver) {
                     metaNaver = document.createElement('meta');
                     metaNaver.name = "naver-site-verification";
                     document.head.appendChild(metaNaver);
                 }
-                metaNaver.content = setting.setting_value;
+                metaNaver.content = val;
             }
         });
     },
