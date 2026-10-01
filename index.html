@@ -8,7 +8,6 @@
 
     <!-- Naver Site Verification -->
     <meta name="naver-site-verification" content="e2bdbd6011d545b1f73c2510e52f4855a3563c57" />
-    <meta name="naver-site-verification" content="33fdd36f14a473936233f59dce6a4f3629d3ca65" />
     <meta name="description" content="우레탄, 에폭시, 인젝션, 내외부 도장, 건물 각종 보수공사 전문">
     
     
@@ -374,10 +373,23 @@
                     <h2 class="section-title">주요 시공 사례</h2>
                 </div>
 
-                <!-- Sharp-cornered Photo Gallery Grid (동적 렌더링을 위해 비워둠) -->
+                <!-- 로컬 대표 사례를 먼저 보여주고, 최신 등록 사례는 백그라운드에서 교체합니다. -->
                 <div class="photo-grid">
-                    <div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 50px 0; font-size: 0.9rem;">
-                        시공 사례를 불러오는 중입니다...
+                    <div class="photo-card gallery-trigger" data-gallery='["assets/images/case_roof_1_1.jpg"]'>
+                        <img src="assets/images/case_roof_1_1.jpg" alt="옥상 우레탄 방수 시공 사례" loading="lazy" decoding="async">
+                        <div class="album-badge"><i class="fa-solid fa-camera"></i><span>옥상 우레탄 방수</span></div>
+                    </div>
+                    <div class="photo-card gallery-trigger" data-gallery='["assets/images/case_wall_2_1.jpg"]'>
+                        <img src="assets/images/case_wall_2_1.jpg" alt="외벽 방수 시공 사례" loading="lazy" decoding="async">
+                        <div class="album-badge"><i class="fa-solid fa-camera"></i><span>외벽 방수</span></div>
+                    </div>
+                    <div class="photo-card gallery-trigger" data-gallery='["assets/images/case_deck_4_1.jpg"]'>
+                        <img src="assets/images/case_deck_4_1.jpg" alt="주차장 바닥 방수 시공 사례" loading="lazy" decoding="async">
+                        <div class="album-badge"><i class="fa-solid fa-camera"></i><span>주차장 바닥 방수</span></div>
+                    </div>
+                    <div class="photo-card gallery-trigger" data-gallery='["assets/images/case_paint_12_1.jpg"]'>
+                        <img src="assets/images/case_paint_12_1.jpg" alt="건물 도장 시공 사례" loading="lazy" decoding="async">
+                        <div class="album-badge"><i class="fa-solid fa-camera"></i><span>건물 도장</span></div>
                     </div>
                 </div>
                 
@@ -846,11 +858,13 @@
         <!-- Supabase Integration for Index Page -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. 공통 로직 실행 (방문자 기록, 설정 적용, 팝업 렌더링)
+            // 공통 원격 작업은 시공 사례 조회를 막지 않도록 백그라운드에서 실행합니다.
             if (typeof api !== 'undefined') {
-                await api.trackVisitor();
-                await api.applySettings();
-                await api.renderPopup();
+                Promise.allSettled([
+                    api.trackVisitor(),
+                    api.applySettings(),
+                    api.renderPopup()
+                ]);
             }
 
             // 2. 견적 폼 전송 이벤트 가로채기
@@ -948,10 +962,7 @@
                         });
                     });
                 } else {
-                    // 데이터가 없을 경우
-                    photoGrids.forEach(grid => {
-                        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 50px 0; font-size: 0.9rem;">등록된 시공 사례가 없습니다.</div>';
-                    });
+                    // 원격 데이터가 없거나 연결이 느려도 HTML에 준비된 대표 사례를 유지합니다.
                 }
             }
         });
