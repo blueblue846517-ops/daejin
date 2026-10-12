@@ -10,11 +10,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
     
     <!-- Supabase SDK & Init -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="assets/js/supabase_init.js?v=10"></script>
+    <script src="assets/vendor/supabase.min.js"></script>
+    <script src="assets/js/supabase_init.js?v=12"></script>
 
     <style>
         body {
@@ -105,7 +105,7 @@
 
             // 공통 로직 적용 (헤더 스크립트 등)
             if (typeof api !== 'undefined') {
-                await api.applySettings();
+                try { await api.applySettings(); } catch (error) { console.warn('설정 조회 실패:', error); }
                 
                 // 전환 추적 스크립트 (conversion_script) 강제 실행
                 try {
@@ -115,7 +115,8 @@
                         .eq('setting_key', 'conversion_script')
                         .single();
                         
-                    if (settings && settings.setting_value) {
+                    if (settings && settings.setting_value && sessionStorage.getItem('quote_conversion_pending')) {
+                        sessionStorage.removeItem('quote_conversion_pending');
                         eval(settings.setting_value);
                         console.log('Conversion script executed');
                     }
