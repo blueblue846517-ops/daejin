@@ -3,38 +3,66 @@ const SUPABASE_URL = 'https://ymgcvcmnwisszabcyisg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZ2N2Y21ud2lzc3phYmN5aXNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NzA2NDksImV4cCI6MjEwMjU0NjY0OX0._ICc_P7jiNY07K7Omu0WII_XOQyoc85A3KCXrt35jI0';
 
 // Supabase 클라이언트 전역 인스턴스
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { fetch: (url, options = {}) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 20000);
+        if (options.signal) {
+            if (options.signal.aborted) controller.abort();
+            else options.signal.addEventListener('abort', () => controller.abort(), {once:true});
+        }
+        return fetch(url, {...options, signal:controller.signal}).finally(() => clearTimeout(timer));
+    } }
+});
+
+// 한국 시간대 기준 날짜 문자열(YYYY-MM-DD)
+function getSeoulDateString(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+}
+
+// 설정에 저장된 HTML에서 script 요소를 새로 만들어 실제로 실행되게 삽입합니다.
+async function appendConfiguredMarkup(target, html) {
+    const template = document.createElement('template'); template.innerHTML = html;
+    const scripts = Array.from(template.content.querySelectorAll('script'));
+    const saved = scripts.map(node => ({node, marker:document.createComment('configured-script')}));
+    saved.forEach(({node,marker}) => node.replaceWith(marker));
+    target.appendChild(template.content);
+    for (const {node,marker} of saved) {
+        const script = document.createElement('script');
+        for (const attribute of Array.from(node.attributes)) script.setAttribute(attribute.name,attribute.value);
+        script.textContent = node.textContent;
+        if (script.src) {
+            await new Promise(resolve => {
+                const timeout = setTimeout(resolve,8000);
+                const done = () => { clearTimeout(timeout); resolve(); };
+                script.onload = done; script.onerror = done; marker.replaceWith(script);
+            });
+        } else marker.replaceWith(script);
+    }
+}
 
 // 공통 유틸리티 기능
 const api = {
+    getSeoulDateString,
+
     // 1. 방문자 통계 업데이트
     trackVisitor: async () => {
-        // 이미 오늘 방문한 경우 세션 체크 (단순 방지)
-        if (sessionStorage.getItem('visited_today')) return;
-        
-        const today = new Date().toISOString().split('T')[0];
-        
-        // 오늘 날짜 데이터가 있는지 확인
-        const { data: existing } = await supabaseClient
-            .from('visitors')
-            .select('visit_count')
-            .eq('visit_date', today)
-            .single();
-
-        if (existing) {
-            // 있으면 count + 1
-            await supabaseClient
-                .from('visitors')
-                .update({ visit_count: existing.visit_count + 1 })
-                .eq('visit_date', today);
-        } else {
-            // 없으면 새로 삽입
-            await supabaseClient
-                .from('visitors')
-                .insert([{ visit_date: today, visit_count: 1 }]);
-        }
-        
-        sessionStorage.setItem('visited_today', 'true');
+        const today = getSeoulDateString();
+        try {
+            // Server deduplicates visits; still check the IP block on each page.
+            const sessionId = sessionStorage.getItem('visit_session') || crypto.randomUUID();
+            sessionStorage.setItem('visit_session', sessionId);
+            const response = await fetch('/api/visit', { method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({ sessionId, referrer:document.referrer, url:location.href }), signal:AbortSignal.timeout(8000) });
+            if (!response.ok) throw new Error('방문 기록 서버 응답: ' + response.status);
+            const result = await response.json();
+            if (result.blocked) { document.body.replaceChildren(Object.assign(document.createElement('h1'), {textContent:'접근이 차단되었습니다.'})); return; }
+            sessionStorage.setItem('visited_today', today);
+        } catch (error) { console.warn('방문 집계를 완료하지 못했습니다:', error.message); }
     },
 
     // 2. 견적 문의 폼 접수
@@ -47,16 +75,96 @@ const api = {
 
     // 3. 동적 스크립트 불러오기 및 적용
     applySettings: async () => {
-        const { data: settings } = await supabaseClient.from('settings').select('*');
+        const { data: settings, error } = await supabaseClient.from('settings').select('setting_key,setting_value').in('setting_key', ['head_script','body_script','seo_title','seo_desc','seo_keywords','ga_measurement_id','kakao_js_key','seo_google_verify','seo_naver_verify']);
+        if (error) throw error;
         if (!settings) return;
 
-        settings.forEach(setting => {
+        for (const setting of settings) {
             if (setting.setting_key === 'head_script' && setting.setting_value) {
-                document.head.insertAdjacentHTML('beforeend', setting.setting_value);
+                await appendConfiguredMarkup(document.head, setting.setting_value);
             } else if (setting.setting_key === 'body_script' && setting.setting_value) {
-                document.body.insertAdjacentHTML('beforeend', setting.setting_value);
+                await appendConfiguredMarkup(document.body, setting.setting_value);
+            } else if (setting.setting_key === 'seo_title' && setting.setting_value) {
+                document.title = setting.setting_value;
+                const ogTitle = document.querySelector('meta[property="og:title"]');
+                if (ogTitle) ogTitle.content = setting.setting_value;
+            } else if (setting.setting_key === 'seo_desc' && setting.setting_value) {
+                let metaDesc = document.querySelector('meta[name="description"]');
+                if (!metaDesc) {
+                    metaDesc = document.createElement('meta');
+                    metaDesc.name = "description";
+                    document.head.appendChild(metaDesc);
+                }
+                metaDesc.content = setting.setting_value;
+                
+                const ogDesc = document.querySelector('meta[property="og:description"]');
+                if (ogDesc) ogDesc.content = setting.setting_value;
+            } else if (setting.setting_key === 'seo_keywords' && setting.setting_value) {
+                let metaKeywords = document.querySelector('meta[name="keywords"]');
+                if (!metaKeywords) {
+                    metaKeywords = document.createElement('meta');
+                    metaKeywords.name = "keywords";
+                    document.head.appendChild(metaKeywords);
+                }
+                metaKeywords.content = setting.setting_value;
+            } else if (setting.setting_key === 'ga_measurement_id' && setting.setting_value) {
+                // 구글 애널리틱스 스크립트 추가
+                const gaId = setting.setting_value;
+                if (!/^G-[A-Z0-9]+$/.test(gaId)) continue;
+                const gaScript = document.createElement('script');
+                gaScript.async = true;
+                gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+                document.head.appendChild(gaScript);
+
+                const gaInit = document.createElement('script');
+                gaInit.innerHTML = `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${gaId}');
+                `;
+                document.head.appendChild(gaInit);
+            } else if (setting.setting_key === 'kakao_js_key' && setting.setting_value) {
+                // 카카오 SDK 및 초기화 스크립트 추가
+                const kakaoId = setting.setting_value;
+                // 기존 스크립트가 없을 때만 추가
+                if (!document.getElementById('kakao-sdk')) {
+                    const kakaoScript = document.createElement('script');
+                    kakaoScript.id = 'kakao-sdk';
+                    kakaoScript.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+                    kakaoScript.onload = () => {
+                        if (window.Kakao && !Kakao.isInitialized()) {
+                            Kakao.init(kakaoId);
+                        }
+                    };
+                    document.head.appendChild(kakaoScript);
+                }
+            } else if (setting.setting_key === 'seo_google_verify' && setting.setting_value) {
+                let val = setting.setting_value;
+                const match = val.match(/content=["']([^"']+)["']/i);
+                if (match) val = match[1];
+
+                let metaGoogle = document.querySelector('meta[name="google-site-verification"]');
+                if (!metaGoogle) {
+                    metaGoogle = document.createElement('meta');
+                    metaGoogle.name = "google-site-verification";
+                    document.head.appendChild(metaGoogle);
+                }
+                metaGoogle.content = val;
+            } else if (setting.setting_key === 'seo_naver_verify' && setting.setting_value) {
+                let val = setting.setting_value;
+                const match = val.match(/content=["']([^"']+)["']/i);
+                if (match) val = match[1];
+
+                let metaNaver = document.querySelector('meta[name="naver-site-verification"]');
+                if (!metaNaver) {
+                    metaNaver = document.createElement('meta');
+                    metaNaver.name = "naver-site-verification";
+                    document.head.appendChild(metaNaver);
+                }
+                metaNaver.content = val;
             }
-        });
+        }
     },
 
     // 4. 전면 팝업 렌더링
@@ -67,10 +175,9 @@ const api = {
         const { data: popups } = await supabaseClient
             .from('popups')
             .select('*')
-            .eq('is_active', true)
-            .limit(1);
+            .order('id').limit(1);
         
-        if (popups && popups.length > 0) {
+        if (popups && popups.length > 0 && popups[0].is_active) {
             const popup = popups[0];
             const popupHtml = `
                 <div id="sitePopupOverlay" style="position: fixed; top: 100px; left: 20px; z-index: 99999;">
@@ -110,6 +217,6 @@ const api = {
     // 주요 검색어 파라미터 감지 (광고 플랫폼 및 커스텀 파라미터)
     const keyword = params.get('keyword') || params.get('utm_term') || params.get('query') || params.get('nvkwd');
     if (keyword) {
-        sessionStorage.setItem('inflow_keyword', keyword);
+        try { sessionStorage.setItem('inflow_keyword', keyword); } catch (_) {}
     }
 })();
