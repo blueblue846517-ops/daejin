@@ -939,6 +939,15 @@ button {
     transition: all var(--transition-smooth);
 }
 
+.photo-card[data-portfolio-id] {
+    background: linear-gradient(135deg, #e2e8f0, #f8fafc);
+}
+
+.photo-card[data-portfolio-id] img:not([src]),
+.photo-card[data-portfolio-id] img[src=""] {
+    visibility: hidden;
+}
+
 .photo-card:hover {
     transform: translateY(-6px);
     box-shadow: var(--shadow-lg);
@@ -1933,3 +1942,9 @@ button {
 .mobile-break {
     display: none;
 }
+
+/* Reserve card space before remote previews arrive; retain existing dimensions. */
+.photo-grid { min-height: 260px; }
+.photo-card img { background: #f1f5f9; }
+.photo-card[aria-busy="true"] { cursor: progress; }
+.photo-card:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; }
