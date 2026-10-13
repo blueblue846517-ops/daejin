@@ -51,26 +51,13 @@ const api = {
 
     // 1. 방문자 통계 업데이트
     trackVisitor: async () => {
-        const today = getSeoulDateString();
-        try {
-            // Server deduplicates visits; still check the IP block on each page.
-            const sessionId = sessionStorage.getItem('visit_session') || crypto.randomUUID();
-            sessionStorage.setItem('visit_session', sessionId);
-            const response = await fetch('/api/visit', { method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({ sessionId, referrer:document.referrer, url:location.href }), signal:AbortSignal.timeout(8000) });
-            if (!response.ok) throw new Error('방문 기록 서버 응답: ' + response.status);
-            const result = await response.json();
-            if (result.blocked) { document.body.replaceChildren(Object.assign(document.createElement('h1'), {textContent:'접근이 차단되었습니다.'})); return; }
-            sessionStorage.setItem('visited_today', today);
-        } catch (error) { console.warn('방문 집계를 완료하지 못했습니다:', error.message); }
+        return window.siteAnalytics?.start();
     },
 
     // 2. 견적 문의 폼 접수
     submitQuote: async (quoteData) => {
-        const { error } = await supabaseClient
-            .from('quotes')
-            .insert([quoteData]);
-        return { success: !error, error };
+        if (!window.siteAnalytics) return {success:false,error:new Error('문의 저장 모듈을 불러오지 못했습니다.')};
+        return window.siteAnalytics.submitQuote(quoteData);
     },
 
     // 3. 동적 스크립트 불러오기 및 적용

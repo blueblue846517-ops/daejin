@@ -363,24 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // --- Visitors ---
-            async function loadVisitors() {
-                const from = new Date(); from.setDate(from.getDate() - 6);
-                const { data: visitors, error } = await supabaseClient.from('visitors').select('visit_date,visit_count').gte('visit_date',api.getSeoulDateString(from));
-                if (error) throw error; if (!visitors) return;
-
-                const today = api.getSeoulDateString();
-                const todayData = visitors.find(v => v.visit_date === today);
-                document.getElementById('statTodayVisits').innerText = `${todayData ? todayData.visit_count : 0} 명`;
-
-                // Calculate this week
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 6);
-                const weekStart = api.getSeoulDateString(weekAgo);
-                const weekVisits = visitors
-                    .filter(v => v.visit_date >= weekStart && v.visit_date <= today)
-                    .reduce((sum, v) => sum + v.visit_count, 0);
-                document.getElementById('statWeekVisits').innerText = `${weekVisits} 명`;
-            }
+            async function loadVisitors() { await window.adminAnalytics.home(); }
 
             // --- Portfolios ---
             window.currentPortfolios = [];
@@ -555,85 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- Analytics & IP Blocking ---
             async function loadAnalytics() {
-                // 1. Inflow Stats
-                const logs = [];
-                let logsError = null;
-                for (let start = 0; ; start += 1000) {
-                    const { data: batch, error } = await supabaseClient
-                        .from('visit_logs')
-                        .select('path, ip, created_at')
-                        .order('created_at', { ascending: false })
-                        .range(start, start + 999);
-                    if (error) {
-                        logsError = error;
-                        break;
-                    }
-                    logs.push(...(batch || []));
-                    if (!batch || batch.length < 1000) break;
-                }
-
-                if (!logsError) {
-                    // 유입경로 집계
-                    const pathCounts = {};
-                    // 다접속 IP 집계
-                    const ipStats = {};
-
-                    logs.forEach(log => {
-                        const path = log.path || '알 수 없음';
-                        pathCounts[path] = (pathCounts[path] || 0) + 1;
-                        
-                        if (log.ip && /^[0-9a-fA-F:.]+$/.test(log.ip)) {
-                            if (!ipStats[log.ip]) {
-                                ipStats[log.ip] = { count: 0, last_visit: log.created_at };
-                            }
-                            ipStats[log.ip].count += 1;
-                            if (new Date(log.created_at) > new Date(ipStats[log.ip].last_visit)) {
-                                ipStats[log.ip].last_visit = log.created_at;
-                            }
-                        }
-                    });
-
-                    // 유입경로 표 렌더링
-                    const inflowTbody = document.getElementById('inflowStatsTable');
-                    inflowTbody.innerHTML = '';
-                    const sortedPaths = Object.entries(pathCounts).sort((a, b) => b[1] - a[1]);
-                    if (sortedPaths.length === 0) {
-                        inflowTbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#64748b;">아직 기록된 방문이 없습니다.</td></tr>';
-                    } else {
-                        sortedPaths.forEach(([path, count]) => {
-                            inflowTbody.innerHTML += `<tr>
-                                <td>${escapeHtml(path)}</td>
-                                <td>${count}회</td>
-                            </tr>`;
-                        });
-                    }
-
-                    // 다접속 IP 표 렌더링 (2회 이상 접속한 IP만 표시)
-                    const multiIpTbody = document.getElementById('multiIpTable');
-                    multiIpTbody.innerHTML = '';
-                    const sortedIps = Object.entries(ipStats)
-                        .filter(([ip, stat]) => stat.count >= 2)
-                        .sort((a, b) => b[1].count - a[1].count);
-                    
-                    if (sortedIps.length === 0) {
-                        multiIpTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#64748b;">다접속 IP 기록이 없습니다.</td></tr>';
-                    } else {
-                        sortedIps.slice(0, 50).forEach(([ip, stat]) => {
-                            multiIpTbody.innerHTML += `<tr>
-                                <td><strong>${escapeHtml(ip)}</strong></td>
-                                <td>${stat.count}회</td>
-                                <td>${new Date(stat.last_visit).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}</td>
-                                <td>
-                                    <button onclick="blockIp('${ip}')" class="btn-danger" style="padding: 4px 8px; font-size: 0.85rem;">차단하기</button>
-                                </td>
-                            </tr>`;
-                        });
-                    }
-                } else if (logsError) {
-                    document.getElementById('inflowStatsTable').innerHTML = '<tr><td colspan="2" style="text-align:center; color:red;">데이터를 불러올 수 없습니다. (visit_logs 테이블 확인 필요)</td></tr>';
-                    document.getElementById('multiIpTable').innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">데이터를 불러올 수 없습니다.</td></tr>';
-                }
-
+                await window.adminAnalytics.load();
+                document.getElementById('multiIpTable').innerHTML = '<tr><td colspan="4">새 수집은 IP 주소를 저장하지 않습니다. 기존 IP 기록은 DB에 보존되며 세션과 동일하지 않습니다.</td></tr>';
                 // 2. Blocked IPs
                 const { data: blocked, error: blockedError } = await supabaseClient
                     .from('blocked_ips')
@@ -667,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (memo !== null) {
                     const { error } = await supabaseClient.from('blocked_ips').insert([{ ip: ip, memo: memo }]);
                     if (!error) {
-                        alert('해당 IP가 차단되었습니다.');
+                        alert('IP 차단 목록에 저장했습니다. 실제 접속 차단은 서버 또는 방화벽 설정이 필요합니다.');
                         loadAnalytics();
                     } else {
                         alert('차단 실패: ' + error.message);

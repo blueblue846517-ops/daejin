@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         });
                         if (!result.success) throw result.error;
                     } catch (error) { console.error('사이트 문의 저장 실패. 기존 Google Forms 접수를 계속합니다.', error); }
-                    try { sessionStorage.setItem('quote_conversion_pending', crypto.randomUUID()); } catch (_) {}
+                    // 전환 토큰은 Supabase 저장 성공 시에만 설정합니다. Google Forms 응답은 교차 출처라 확인할 수 없습니다.
                     heroFormSubmitted = true;
                     HTMLFormElement.prototype.submit.call(quoteForm);
                     setTimeout(() => { quoteForm.dataset.submitting = 'false'; button.disabled = false; }, 15000);
