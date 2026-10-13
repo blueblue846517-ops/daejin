@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="assets/css/admin.css">
     <!-- Supabase -->
     <script defer src="assets/vendor/supabase.min.js"></script>
-    <script defer src="assets/js/supabase_init.js?v=12"></script>
+    <script defer src="assets/js/supabase_init.js?v=20261012"></script>
+    <script defer src="assets/js/analytics-core.js?v=20261012"></script>
+    <script defer src="assets/js/admin-analytics.js?v=20261012"></script>
     <script defer src="assets/js/site-data.js?v=12"></script>
     <style>
         /* 추가 관리자 스타일 */
@@ -102,19 +104,20 @@
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                             <div class="stat-info">
-                                <h3>오늘 방문자</h3>
+                                <h3>오늘 방문 세션</h3>
                                 <div class="stat-value" id="statTodayVisits">0 명</div>
                             </div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
                             <div class="stat-info">
-                                <h3>이번 주 누적 방문자</h3>
+                                <h3>최근 7일 방문 세션</h3>
                                 <div class="stat-value" id="statWeekVisits">0 명</div>
                             </div>
                         </div>
                     </div>
 
+                    <p id="analyticsToday" role="status"></p>
                     <!-- Keyword Statistics -->
                     <section class="data-section" style="margin-bottom: 2rem;">
                         <div class="data-section-header">
@@ -295,6 +298,22 @@
 
                 <!-- TAB 7: 방문/유입 분석 -->
                 <div id="tab-analytics" class="tab-content">
+                    <section class="data-section" style="margin-bottom:2rem">
+                        <h2>방문·유입 분석</h2>
+                        <p>한국 시간 기준 · 세션은 30분 미활동 후 갱신 · 순 방문자는 익명 브라우저 기준입니다. 전화 클릭은 실제 통화가 아닙니다. 견적 저장 성공은 홈페이지 DB에 접수된 문의만 집계합니다.</p>
+                        <form id="analyticsFilters" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+                            <label>기간 <select id="analyticsRange"><option value="1">오늘</option><option value="yesterday">어제</option><option value="7" selected>최근 7일</option><option value="30">최근 30일</option><option value="custom">직접 선택</option></select></label>
+                            <label>시작일 <input id="analyticsStart" type="date" required></label>
+                            <label>종료일 <input id="analyticsEnd" type="date" required></label>
+                            <button type="submit" class="btn-primary">조회 / 새로고침</button>
+                        </form>
+                        <p id="analyticsStatus" role="status"></p>
+                        <p>관리자 로그인된 브라우저의 방문은 제외됩니다. Referrer가 차단·생략된 방문은 직접 방문과 구분할 수 없습니다. 기존 일일 카운터는 세션/순 방문자 수로 환산할 수 없어 이 보고서에 합산하지 않습니다.</p>
+                        <div id="analyticsKpis" class="stats-grid"></div>
+                    </section>
+                    <section class="data-section" style="margin-bottom:2rem;overflow:auto"><h2>일별 방문 추이</h2><table class="admin-table"><thead><tr><th>날짜(KST)</th><th>방문 세션</th><th>페이지 조회</th></tr></thead><tbody id="analyticsDaily"></tbody></table></section>
+                    <section class="data-section" style="margin-bottom:2rem;overflow:auto"><h2>실제 전달된 검색 키워드</h2><p>검색 서비스가 검색어를 전달하지 않으면 ‘검색어 확인 불가’입니다. UTM Term, 네이버 광고 n_keyword, 실제 검색 Referrer의 검색어만 사용합니다. 공식 도구는 아직 연동되지 않았습니다.</p><table class="admin-table"><thead><tr><th>키워드</th><th>방문 세션</th></tr></thead><tbody id="analyticsKeywords"></tbody></table></section>
+                    <section class="data-section" style="margin-bottom:2rem;overflow:auto"><h2>방문 및 행동 상세</h2><label>기록 검색 <input id="analyticsSearch" type="search" placeholder="출처·키워드·캠페인·세션"></label><p id="analyticsPage"></p><button id="analyticsPrev" type="button">이전</button> <button id="analyticsNext" type="button">다음</button><table class="admin-table"><thead><tr><th>일시(KST)</th><th>행동</th><th>유입 출처</th><th>매체</th><th>키워드</th><th>최초 랜딩</th><th>캠페인</th><th>세션 식별자</th><th>조회 페이지</th><th>이전 페이지</th><th>UTM Source</th><th>UTM Medium</th><th>UTM Term</th><th>UTM Content</th><th>광고 식별자</th></tr></thead><tbody id="analyticsDetails"></tbody></table></section>
                     <!-- 유입 경로 통계 -->
                     <section class="data-section" style="margin-bottom: 2rem;">
                         <div class="data-section-header">
@@ -304,7 +323,7 @@
                             <thead>
                                 <tr>
                                     <th>유입경로</th>
-                                    <th>방문 횟수</th>
+                                    <th>방문 세션</th><th>비율</th>
                                 </tr>
                             </thead>
                             <tbody id="inflowStatsTable">
@@ -316,7 +335,7 @@
                     <!-- 다접속 IP 확인 -->
                     <section class="data-section" style="margin-bottom: 2rem;">
                         <div class="data-section-header">
-                            <h2>다접속 IP 목록 (최근 누적)</h2>
+                            <h2>기존 IP 기록 (과거 자료)</h2>
                         </div>
                         <table class="admin-table">
                             <thead>
@@ -336,8 +355,9 @@
                     <!-- 차단된 IP 관리 -->
                     <section class="data-section">
                         <div class="data-section-header">
-                            <h2>차단된 IP 관리</h2>
+                            <h2>기존 IP 차단 목록 관리</h2>
                         </div>
+                        <p>목록은 보존됩니다. 새 방문 분석은 IP를 수집하지 않으므로 이 목록만으로 접속을 차단하지 않습니다. 실제 접근 차단은 서버 또는 Vercel 방화벽 설정이 필요합니다.</p>
                         <table class="admin-table">
                             <thead>
                                 <tr>
@@ -393,7 +413,7 @@
     <!-- ==========================================================================
        ADMIN FUNCTIONALITY SCRIPT
        ========================================================================== -->
-    <script defer src="assets/js/admin.js?v=12"></script>
+    <script defer src="assets/js/admin.js?v=20261012"></script>
 
     <!-- 견적 상세 및 메모 모달 -->
     <div id="quoteDetailModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
