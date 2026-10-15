@@ -67,6 +67,9 @@ const api = {
         if (!settings) return;
 
         for (const setting of settings) {
+            // Page-specific static SEO must match the initial HTML seen by crawlers.
+            if (document.documentElement.dataset.seoSource === 'static' &&
+                ['seo_title', 'seo_desc', 'seo_keywords'].includes(setting.setting_key)) continue;
             if (setting.setting_key === 'head_script' && setting.setting_value) {
                 await appendConfiguredMarkup(document.head, setting.setting_value);
             } else if (setting.setting_key === 'body_script' && setting.setting_value) {
