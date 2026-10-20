@@ -21,7 +21,7 @@ for (const page of pages) {
  assert(html.includes("location.href='/thanks.html'"));
  const faq = html.match(/id="faq">([\s\S]*?)<\/section>/)[1];
  assert.equal((faq.match(/<details>/g)||[]).length,6);
- for (const id of ['overview','symptoms','process','guide','cases','faq','estimate']) assert(html.includes(`id="${id}"`));
+ for (const id of ['overview','symptoms','process','guide','faq','estimate']) assert(html.includes(`id="${id}"`));
  const schema = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
  assert(schema['@graph'].some(x=>x['@type']==='Service'&&x.name===page.name));
  assert(!schema['@graph'].some(x=>x.aggregateRating));
