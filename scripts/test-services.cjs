@@ -20,7 +20,12 @@ for (const page of pages) {
  assert(html.includes('action="https://docs.google.com/forms/'));
  assert(html.includes("location.href='/thanks.html'"));
  const faq = html.match(/id="faq">([\s\S]*?)<\/section>/)[1];
- assert.equal((faq.match(/<details>/g)||[]).length,6);
+ assert.equal((faq.match(/<details>/g)||[]).length,page.faq.length);
+ assert(html.includes('class="svc-title-guide">시공가이드'));
+ assert(html.includes('servicesDropdown'));
+ assert(!html.includes('DAEJIN · 시공 가이드'));
+ assert(!html.includes('공법 자세히 알아보기'));
+ assert(html.includes('시공 프로세스'));
  for (const id of ['overview','symptoms','process','guide','faq','estimate']) assert(html.includes(`id="${id}"`));
  const schema = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
  assert(schema['@graph'].some(x=>x['@type']==='Service'&&x.name===page.name));
@@ -72,5 +77,6 @@ async function quoteScenario(fail) {
  await quoteScenario(false);await quoteScenario(true);
  for(const p of pages){const response=await fetch('http://127.0.0.1:4173/services/'+p.slug);assert.equal(response.status,200);assert((await response.text()).includes(p.intro));}
  assert.equal((await fetch('http://127.0.0.1:4173/services/not-a-service')).status,404);
- console.log('PASS: 5 static pages, SEO, assets, rewrites, 30 FAQs, conservative case matching, case success/empty/error, quote success/failure/duplicate guard, HTTP 200 + unknown 404.');
+ console.log('PASS: 5 static pages, SEO, assets, rewrites, updated FAQs and navigation, conservative case matching, case success/empty/error, quote success/failure/duplicate guard, HTTP 200 + unknown 404.');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+

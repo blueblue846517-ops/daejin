@@ -324,6 +324,36 @@ function initMobileMenu() {
 
     if (!mobileBtn || !navList) return;
 
+    const services = navList.querySelector('.nav-services');
+    const toggle = services?.querySelector('.services-menu-toggle');
+    const setExpanded = value => {
+        if (!toggle) return;
+        toggle.setAttribute('aria-expanded', String(value));
+        services.classList.toggle('is-open', value);
+    };
+    toggle?.addEventListener('click', () => setExpanded(toggle.getAttribute('aria-expanded') !== 'true'));
+    services?.addEventListener('mouseenter', () => {
+        if (matchMedia('(hover: hover)').matches) setExpanded(true);
+    });
+    services?.addEventListener('mouseleave', () => {
+        if (!services.contains(document.activeElement)) setExpanded(false);
+    });
+    services?.addEventListener('focusout', event => {
+        if (!services.contains(event.relatedTarget)) setExpanded(false);
+    });
+    services?.addEventListener('keydown', event => {
+        if (event.key === 'Escape') { setExpanded(false); toggle.focus(); }
+    });
+    document.addEventListener('click', event => {
+        if (services && !services.contains(event.target)) setExpanded(false);
+    });
+    services?.querySelectorAll('.services-dropdown a').forEach(link => {
+        link.addEventListener('click', () => {
+            setExpanded(false);
+            if (window.innerWidth <= 768) navList.style.display = 'none';
+        });
+    });
+
     mobileBtn.addEventListener('click', () => {
         const isVisible = navList.style.display === 'flex';
         if (isVisible) {
