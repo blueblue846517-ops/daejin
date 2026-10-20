@@ -320,7 +320,7 @@ function initModals() {
 function initMobileMenu() {
     const mobileBtn = document.getElementById('mobileMenuBtn');
     const navList = document.querySelector('.nav-list');
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('a.nav-link');
 
     if (!mobileBtn || !navList) return;
 

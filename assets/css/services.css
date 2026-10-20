@@ -50,7 +50,7 @@
 .svc-steps li {padding:26px;border:1px solid #dfe6df;display:flex;gap:22px;border-radius:5px;}
 .svc-steps li:last-child {grid-column:1/-1;}
 .svc-steps li:last-child:nth-child(even) {grid-column:auto;}
-.svc-title-guide {display:inline-block;font-size:.68em;letter-spacing:-.03em;margin-top:12px;font-weight:600;}
+.svc-title-guide {display:inline-block;font-size:1em;letter-spacing:inherit;margin-top:12px;font-weight:inherit;}
 .svc-method {padding:0;overflow:hidden;}
 .svc-method>div {padding:24px;}
 .svc-method img {display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;}
@@ -122,3 +122,4 @@
  .service-page{padding-bottom:65px;}.service-page .footer{padding-bottom:40px;}
 }
 @media(prefers-reduced-motion:reduce){.service-page{scroll-behavior:auto;}.service-page *{transition:none!important;}}
+
