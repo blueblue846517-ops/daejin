@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/services/urethane", "destination": "/services/urethane.html" },
+    { "source": "/services/epoxy", "destination": "/services/epoxy.html" },
+    { "source": "/services/injection", "destination": "/services/injection.html" },
+    { "source": "/services/painting", "destination": "/services/painting.html" },
+    { "source": "/services/repair", "destination": "/services/repair.html" }
+  ]
+}

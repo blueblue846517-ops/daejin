@@ -1948,3 +1948,6 @@ button {
 .photo-card img { background: #f1f5f9; }
 .photo-card[aria-busy="true"] { cursor: progress; }
 .photo-card:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; }
+.area-card[href] { display: block; }
+.area-card[href]:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 4px; }
+.area-card[href]:focus-visible .area-hover-overlay { opacity: 1; }
