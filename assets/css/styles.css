@@ -1743,6 +1743,14 @@ button {
     background: var(--color-primary-light);
 }
 
+/* Reserve space for the desktop form; use the existing compact layout on tablets. */
+@media (min-width: 1025px) {
+    .hero-title, .hero-subtitle { max-width: calc(100% - 420px); }
+}
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hero-quote-form-container.pc-only { display: none; }
+}
+
 /* ==========================================================================
    ABOUT PAGE STYLES (회사소개 페이지)
    ========================================================================== */
@@ -1962,3 +1970,4 @@ button {
 .area-card[href] { display: block; }
 .area-card[href]:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 4px; }
 .area-card[href]:focus-visible .area-hover-overlay { opacity: 1; }
+
