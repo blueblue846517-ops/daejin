@@ -326,14 +326,25 @@ function initMobileMenu() {
 
     const services = navList.querySelector('.nav-services');
     const toggle = services?.querySelector('.services-menu-toggle');
+    let openedByHover = false;
     const setExpanded = value => {
         if (!toggle) return;
         toggle.setAttribute('aria-expanded', String(value));
         services.classList.toggle('is-open', value);
+        if (!value) openedByHover = false;
     };
-    toggle?.addEventListener('click', () => setExpanded(toggle.getAttribute('aria-expanded') !== 'true'));
+    toggle?.addEventListener('click', event => {
+        // A mouse entering the button already opens the menu. Its first click
+        // must not immediately undo that hover action.
+        const keepOpen = event.detail > 0 && openedByHover;
+        openedByHover = false;
+        setExpanded(keepOpen || toggle.getAttribute('aria-expanded') !== 'true');
+    });
     services?.addEventListener('mouseenter', () => {
-        if (matchMedia('(hover: hover)').matches) setExpanded(true);
+        if (matchMedia('(hover: hover)').matches && toggle?.getAttribute('aria-expanded') !== 'true') {
+            setExpanded(true);
+            openedByHover = true;
+        }
     });
     services?.addEventListener('mouseleave', () => {
         if (!services.contains(document.activeElement)) setExpanded(false);
@@ -491,4 +502,5 @@ function initPhotoGallery() {
         }
     }
 }
+
 
