@@ -52,6 +52,7 @@
 .svc-steps li:last-child:nth-child(even) {grid-column:auto;}
 .svc-title-guide {display:inline-block;font-size:1em;letter-spacing:inherit;margin-top:12px;font-weight:inherit;}
 .svc-method {padding:0;overflow:hidden;}
+.svc-methods-two {grid-template-columns:repeat(2,minmax(0,1fr));}
 .svc-method>div {padding:24px;}
 .svc-method img {display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;}
 .svc-method p+p {margin-top:12px;}
