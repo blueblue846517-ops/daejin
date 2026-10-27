@@ -346,6 +346,7 @@ module.exports = [
     "name": "내외부 페인트 도장",
     "hideGuideTitle": true,
     "image": "services/painting-exterior.webp",
+    "heroCropPosition": "north",
     "alt": "고소작업 장비를 이용한 건물 외벽 페인트 도장 현장",
     "title": "내외부 페인트 도장 · 내부·외벽·금속 도장 | 대진특수방수",
     "description": "외벽·내부 도장공사의 도료 선택, 균열 보수와 바탕 처리, 박리·변색 원인 및 시공 전후 관리 방법을 안내합니다. 서울 건물 도장 현장 견적 상담.",
