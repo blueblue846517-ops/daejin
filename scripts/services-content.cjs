@@ -464,6 +464,7 @@ module.exports = [
     "slug": "repair",
     "name": "건물 각종 보수 공사",
     "hideGuideTitle": true,
+    "hideGuideSections": true,
     "hideMethodDescriptions": true,
     "image": "service_repair.jpg",
     "alt": "건물 보수 작업 모습",
