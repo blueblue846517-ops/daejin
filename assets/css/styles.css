@@ -281,7 +281,9 @@ button {
 .services-dropdown a:hover,.services-dropdown a:focus-visible { background: #edf5ef; color: #166534; }
 .services-menu-toggle:focus-visible { outline: 2px solid #166534; outline-offset: 2px; }
 @media(max-width:768px) {
-    .nav-services { width: 100%; }
+    .nav-list > .nav-item { width: 100%; }
+    .nav-item.nav-services { justify-content: center; }
+    .nav-list > .nav-item > .nav-link { width: 100%; justify-content: center; text-align: center; padding: 14px 0; line-height: 1.5; }
     .services-dropdown { position: static; width: 100%; margin-top: 4px; padding: 8px 0; gap: 0; flex-direction: column; }
     .services-dropdown li { width: 100%; }
 }
