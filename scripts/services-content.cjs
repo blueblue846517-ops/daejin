@@ -343,13 +343,15 @@ module.exports = [
   },
   {
     "slug": "painting",
-    "name": "내외부 도장",
-    "image": "service_paint.jpg",
-    "alt": "고층 건물의 외벽 모습",
-    "title": "내외부 도장공사 · 건물 외벽 페인트 시공 | 대진특수방수",
+    "name": "내외부 페인트 도장",
+    "hideGuideTitle": true,
+    "image": "services/painting-exterior.webp",
+    "alt": "고소작업 장비를 이용한 건물 외벽 페인트 도장 현장",
+    "title": "내외부 페인트 도장 · 내부·외벽·금속 도장 | 대진특수방수",
     "description": "외벽·내부 도장공사의 도료 선택, 균열 보수와 바탕 처리, 박리·변색 원인 및 시공 전후 관리 방법을 안내합니다. 서울 건물 도장 현장 견적 상담.",
     "intro": "건물 도장은 표면을 정돈하고 사용 환경에 맞는 보호층을 만드는 작업입니다. 오래된 벽면에서는 색상 선택에 앞서 기존 도막의 접착, 균열과 수분 유입을 살펴야 합니다. 일반 페인트를 바르는 것만으로 누수나 구조 균열이 해결되는 것은 아닙니다.",
     "compareTitle": "내부 도장과 외벽 도장의 선택 기준",
+    "methodImages": ["painting-interior", "painting-exterior", "painting-metal"],
     "compare": [
       [
         "내부",
