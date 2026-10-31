@@ -469,9 +469,10 @@ module.exports = [
     "image": "service_repair.jpg",
     "alt": "건물 보수 작업 모습",
     "title": "건물 각종 보수 공사 · 방수·도색·보수 시공 | 대진특수방수",
-    "description": "트렌치 교체, 샷시·타일 보수, 저수조 방수, 주차선 도색, 몰탈 방수, 오일스테인 시공 등 건물에 필요한 공사를 진행합니다.",
+    "description": "트렌치 교체, 샷시·타일 보수, 저수조 방수, 주차선 도색, 몰탈 방수, 오일스테인, 방수판 시공 등 건물에 필요한 공사를 진행합니다.",
     "intro": "건물의 상태와 사용 환경에 맞춰 필요한 보수공사를 진행합니다.",
     "compareTitle": "주요 보수공사",
+    "methodImages": ["repair-trench", "repair-window", "repair-tile", "repair-water-tank", "repair-parking-lines", "repair-mortar", "repair-oil-stain", "repair-waterproof-board"],
     "compare": [
       [
         "트렌치(배수로) 교체"
@@ -485,7 +486,8 @@ module.exports = [
       ["저수조 방수"],
       ["주차선 도색"],
       ["몰탈 방수"],
-      ["오일스테인 시공"]
+        ["오일스테인 시공"],
+        ["방수판 시공"]
     ],
     "symptoms": [
       "트렌치 덮개가 흔들리거나 배수로 주변 바닥이 파손됐습니다.",
