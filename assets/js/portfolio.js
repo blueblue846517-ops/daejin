@@ -1,5 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const grids = Array.from(document.querySelectorAll('.photo-grid'));
+    // Homepage cards and galleries are part of the HTML and use local assets.
+    // Keep keyboard activation without fetching or replacing the static cards.
+    document.querySelectorAll('.photo-grid[data-portfolio-source="static"]').forEach(grid => {
+        grid.addEventListener('keydown', event => {
+            const card = event.target.closest('.gallery-trigger');
+            if (card && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                card.click();
+            }
+        });
+    });
+    const grids = Array.from(document.querySelectorAll('.photo-grid:not([data-portfolio-source="static"])'));
     if (!grids.length) return;
     let signature = null, loading = false;
     async function refresh() {
