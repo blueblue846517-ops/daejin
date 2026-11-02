@@ -22,7 +22,7 @@ const sectionHeading = (n,title,desc='') => `<div class="svc-section-heading"><h
 const examplePhotos = examples => examples.map(example => {
  const label = typeof example === 'string' ? example : example.label;
  const photo = typeof example === 'object' && example.image;
- return `<figure>${photo ? `<img src="/assets/images/services/${esc(photo)}.webp" alt="${esc(label)} 에폭시 시공 사진" width="960" height="720" loading="lazy" decoding="async">` : `<div class="svc-photo-placeholder" role="img" aria-label="${esc(label)} 사진 자리"></div>`}<figcaption>${esc(label)}</figcaption></figure>`;
+ return `<figure>${photo ? `<img src="/assets/images/services/${esc(photo)}.webp" alt="${esc(label)} 에폭시 시공 사진" width="960" height="720" loading="lazy" decoding="async">` : `<div class="svc-photo-placeholder" role="img" aria-label="${esc(label)} 사진 자리"></div>`}${example.hideCaption ? '' : `<figcaption>${esc(label)}</figcaption>`}</figure>`;
 }).join('');
 const buttons = '<div class="svc-actions"><a class="svc-button" href="tel:010-5345-8465">전화 상담 010-5345-8465</a><a class="svc-button svc-button-outline" href="#estimate">빠른 견적 문의 ↗</a></div>';
 fs.mkdirSync(path.join(root,'services'), {recursive:true});

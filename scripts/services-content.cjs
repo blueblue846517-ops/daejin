@@ -125,8 +125,9 @@ module.exports = [
     "compareTitle": "에폭시 시공 종류",
     "methodExamples": [
       [
-        {"label": "투명 코팅", "image": "epoxy-clear-coating"},
-        {"label": "회색 코팅", "image": "epoxy-gray-coating"}
+        {"label": "투명 코팅", "image": "epoxy-clear-coating", "hideCaption": true},
+        {"label": "회색 코팅", "image": "epoxy-gray-coating", "hideCaption": true},
+        {"label": "실내 에폭시 바닥 코팅", "image": "epoxy-interior-floor", "hideCaption": true}
       ],
       [
         {"label": "주차장", "image": "epoxy-parking-floor"},
