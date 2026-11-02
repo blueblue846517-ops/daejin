@@ -49,7 +49,7 @@ for (const p of pages) {
  <meta property="og:type" content="website"><meta property="og:locale" content="ko_KR"><meta property="og:site_name" content="대진특수방수">
  <meta property="og:title" content="${esc(p.title)}"><meta property="og:description" content="${esc(p.description)}"><meta property="og:url" content="${url}">
  <meta property="og:image" content="${origin}/assets/images/services/${p.slug}-1200.webp"><meta property="og:image:alt" content="${esc(p.alt)}">
- <link rel="icon" href="/assets/images/favicon.png">
+ <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261102"><link rel="icon" type="image/png" sizes="512x512" href="/assets/images/favicon-square.png?v=20261102"><link rel="apple-touch-icon" href="/assets/images/favicon-square.png?v=20261102">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
  <link rel="stylesheet" href="/assets/css/styles.css?v=20261021"><link rel="stylesheet" href="/assets/css/services.css?v=20261021">
  <script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')}</script>
