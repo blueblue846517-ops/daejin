@@ -7,10 +7,10 @@ module.exports = [
     "image": "service_urethan.jpg",
     "alt": "옥상 바닥에 녹색 우레탄 도막을 시공한 모습",
     "title": "방수 시공 · 우레탄·시트·저수조·몰탈·방수판·인젝션 | 대진특수방수",
-    "description": "우레탄 도막, 시트, 복합 시트, 저수조, 몰탈, 방수판 및 인젝션 방수 시공을 안내합니다. 현장 상태와 사용 환경에 맞는 방수공사를 상담하세요.",
-    "intro": "현장 상태와 사용 환경에 맞춰 우레탄 도막, 시트, 복합 시트, 저수조, 몰탈, 방수판 및 인젝션 방수를 시공합니다.",
+    "description": "우레탄 도막, 시트, 복합 시트, 저수조, 몰탈, 방수판, 인젝션 및 수영장 방수 시공을 안내합니다. 현장 상태와 사용 환경에 맞는 방수공사를 상담하세요.",
+    "intro": "현장 상태와 사용 환경에 맞춰 우레탄 도막, 시트, 복합 시트, 저수조, 몰탈, 방수판, 인젝션 및 수영장 방수를 시공합니다.",
     "compareTitle": "방수 시공 종류",
-    "methodImages": ["roof-urethane-coating", "roof-sheet-waterproofing", "roof-composite-sheet", "repair-water-tank", "repair-mortar", "repair-waterproof-board", "injection-high-pressure"],
+    "methodImages": ["roof-urethane-coating", "roof-sheet-waterproofing", "roof-composite-sheet", "repair-water-tank", "repair-mortar", "repair-waterproof-board", "injection-high-pressure", "waterproof-pool"],
     "compare": [
       [
         "우레탄 도막 방수",
@@ -30,7 +30,8 @@ module.exports = [
       ["저수조 방수"],
       ["몰탈 방수"],
       ["방수판 시공"],
-      ["인젝션 방수", "인젝션 고압주입, 저압주사기 공법"]
+      ["인젝션 방수", "인젝션 고압주입, 저압주사기 공법"],
+      ["수영장 방수"]
     ],
     "symptoms": [
       "옥상 도막이 부풀거나 가장자리부터 벗겨집니다.",
