@@ -2,15 +2,15 @@
 module.exports = [
   {
     "slug": "urethane",
-    "name": "옥상 방수 시공",
+    "name": "방수 시공",
     "hideGuideTitle": true,
     "image": "service_urethan.jpg",
     "alt": "옥상 바닥에 녹색 우레탄 도막을 시공한 모습",
-    "title": "옥상 방수 시공 · 우레탄 도막·시트·복합 시트 방수 | 대진특수방수",
-    "description": "우레탄 도막 방수, 시트방수, 복합 시트 방수의 시공 방식을 안내합니다. 옥상 상태와 접합부에 맞춘 방수공사를 상담하세요.",
-    "intro": "옥상 상태와 사용 환경에 맞춰 우레탄 도막 방수, 시트방수, 복합 시트 방수를 시공합니다. 넓은 바닥과 함께 조인트, 배수구, 벽과 바닥이 만나는 부분의 방수 처리를 고려합니다.",
-    "compareTitle": "옥상 방수 시공 종류",
-    "methodImages": ["roof-urethane-coating", "roof-sheet-waterproofing", "roof-composite-sheet"],
+    "title": "방수 시공 · 우레탄·시트·저수조·몰탈·방수판·인젝션 | 대진특수방수",
+    "description": "우레탄 도막, 시트, 복합 시트, 저수조, 몰탈, 방수판 및 인젝션 방수 시공을 안내합니다. 현장 상태와 사용 환경에 맞는 방수공사를 상담하세요.",
+    "intro": "현장 상태와 사용 환경에 맞춰 우레탄 도막, 시트, 복합 시트, 저수조, 몰탈, 방수판 및 인젝션 방수를 시공합니다.",
+    "compareTitle": "방수 시공 종류",
+    "methodImages": ["roof-urethane-coating", "roof-sheet-waterproofing", "roof-composite-sheet", "repair-water-tank", "repair-mortar", "repair-waterproof-board", "injection-high-pressure"],
     "compare": [
       [
         "우레탄 도막 방수",
@@ -26,7 +26,11 @@ module.exports = [
         "복합 시트 방수",
         "조인트 부분은 시트로, 넓은 면은 우레탄 도막으로 시공합니다.",
         "시트와 우레탄 도막을 함께 적용하고 두 방수층이 만나는 부분을 연속적으로 마감합니다."
-      ]
+      ],
+      ["저수조 방수"],
+      ["몰탈 방수"],
+      ["방수판 시공"],
+      ["인젝션 방수", "인젝션 고압주입, 저압주사기 공법"]
     ],
     "symptoms": [
       "옥상 도막이 부풀거나 가장자리부터 벗겨집니다.",
@@ -469,10 +473,10 @@ module.exports = [
     "image": "service_repair.jpg",
     "alt": "건물 보수 작업 모습",
     "title": "건물 각종 보수 공사 · 방수·도색·보수 시공 | 대진특수방수",
-    "description": "트렌치 교체, 샷시·타일 보수, 저수조 방수, 주차선 도색, 몰탈 방수, 오일스테인, 방수판 시공 등 건물에 필요한 공사를 진행합니다.",
+    "description": "트렌치 교체, 샷시·타일 보수, 주차선 도색, 오일스테인 시공 등 건물에 필요한 보수공사를 진행합니다.",
     "intro": "건물의 상태와 사용 환경에 맞춰 필요한 보수공사를 진행합니다.",
     "compareTitle": "주요 보수공사",
-    "methodImages": ["repair-trench", "repair-window", "repair-tile", "repair-water-tank", "repair-parking-lines", "repair-mortar", "repair-oil-stain", "repair-waterproof-board"],
+    "methodImages": ["repair-trench", "repair-window", "repair-tile", "repair-parking-lines", "repair-oil-stain"],
     "compare": [
       [
         "트렌치(배수로) 교체"
@@ -483,11 +487,8 @@ module.exports = [
       [
         "타일 보수"
       ],
-      ["저수조 방수"],
       ["주차선 도색"],
-      ["몰탈 방수"],
-        ["오일스테인 시공"],
-        ["방수판 시공"]
+      ["오일스테인 시공"]
     ],
     "symptoms": [
       "트렌치 덮개가 흔들리거나 배수로 주변 바닥이 파손됐습니다.",
