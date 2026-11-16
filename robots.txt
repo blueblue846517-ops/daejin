@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /admin.html
 Sitemap: https://www.daejinwnc.com/sitemap.xml
