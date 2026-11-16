@@ -327,7 +327,9 @@ function initMobileMenu() {
     const services = navList.querySelector('.nav-services');
     const toggle = services?.querySelector('.services-menu-toggle');
     let openedByHover = false;
+    let servicesCloseTimer;
     const setExpanded = value => {
+        clearTimeout(servicesCloseTimer);
         if (!toggle) return;
         toggle.setAttribute('aria-expanded', String(value));
         services.classList.toggle('is-open', value);
@@ -341,13 +343,20 @@ function initMobileMenu() {
         setExpanded(keepOpen || toggle.getAttribute('aria-expanded') !== 'true');
     });
     services?.addEventListener('mouseenter', () => {
+        clearTimeout(servicesCloseTimer);
         if (matchMedia('(hover: hover)').matches && toggle?.getAttribute('aria-expanded') !== 'true') {
             setExpanded(true);
             openedByHover = true;
         }
     });
     services?.addEventListener('mouseleave', () => {
-        if (!services.contains(document.activeElement)) setExpanded(false);
+        if (!matchMedia('(hover: hover)').matches) return;
+        clearTimeout(servicesCloseTimer);
+        servicesCloseTimer = setTimeout(() => {
+            if (!services.matches(':hover') && !services.contains(document.activeElement)) {
+                setExpanded(false);
+            }
+        }, 450);
     });
     services?.addEventListener('focusout', event => {
         if (!services.contains(event.relatedTarget)) setExpanded(false);
