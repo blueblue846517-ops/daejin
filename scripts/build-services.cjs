@@ -79,7 +79,12 @@ ${header}
  <section class="svc-section container" id="overview">${sectionHeading('',p.compareTitle,p.intro)}<div class="svc-grid svc-methods${p.methodExamples ? ' svc-methods-examples' : p.compare.length === 2 ? ' svc-methods-two' : ''}">${p.compare.map((row,i)=>`<article class="svc-card svc-method"${p.methodIds?.[i] ? ` id="${esc(p.methodIds[i])}"` : ''}>${p.methodExamples?.[i] ? `<div class="svc-method-examples">${examplePhotos(p.methodExamples[i])}</div>` : ''}${p.methodImages?.[i] ? `<img src="/assets/images/services/${p.methodImages[i]}.webp" alt="${esc(row[0])} 시공 사진" width="960" height="720" loading="lazy" decoding="async">` : ''}<div><h3>${esc(row[0])}</h3>${p.hideMethodDescriptions ? '' : `${row.slice(1).filter(Boolean).map(text=>`<p>${esc(text)}</p>`).join('')}`}</div></article>`).join('')}</div>${p.methodImageNote ? `<p class="svc-image-note">${esc(p.methodImageNote)}</p>` : ''}</section>
  ${p.workExamples ? `<section class="svc-section container" id="work-examples">
   ${sectionHeading('','페인트 시공 사례')}
-  <div class="svc-grid svc-methods">${p.workExamples.map(([title, image]) => `<article class="svc-card svc-method"><img src="/assets/images/${esc(image)}" alt="${esc(title)}" width="960" height="720" loading="lazy" decoding="async"><div><h3>${esc(title)}</h3></div></article>`).join('')}</div>
+  <div class="photo-grid">
+   ${p.workExamples.map(([title, image]) => `<article class="photo-card">
+    <img src="/assets/images/${esc(image)}" alt="" loading="lazy" decoding="async">
+    <h3 class="album-badge"><i class="fa-solid fa-camera" aria-hidden="true"></i><span style="margin-left:5px;font-weight:bold;font-size:.9rem;">${esc(title)}</span></h3>
+   </article>`).join('\n')}
+  </div>
  </section>` : ''}
  ${p.hideGuideSections ? '' : `<section class="svc-band" id="symptoms"><div class="container svc-split">${sectionHeading('02 · CHECK',p.symptomsTitle || '이런 상황이라면 점검이 필요합니다',p.symptomsIntro || '겉으로 보이는 증상과 실제 원인은 다를 수 있습니다. 반복되는 문제는 원인부터 확인합니다.')}<ul class="svc-symptoms">${p.symptoms.map(s=>`<li><span aria-hidden="true">↗</span>${esc(s)}</li>`).join('')}</ul></div></section>`}
  ${p.hideGuideSections ? '' : `<section class="svc-section container" id="process">${sectionHeading('03 · PROCESS','시공 프로세스',p.processIntro || '일반적인 공정 안내입니다. 현장 조건, 선정한 자재와 제조사 시방에 따라 순서·횟수·두께·양생 조건이 달라집니다.')}<ol class="svc-steps">${p.steps.map((s,i)=>`<li><span class="svc-step-number" aria-hidden="true">0${i+1}</span><div><h3>${esc(s[0])}</h3><p>${esc(s[1])}</p></div></li>`).join('')}</ol></section>`}
