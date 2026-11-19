@@ -392,7 +392,7 @@ module.exports = [
         "services/painting-metal.webp"
       ],
       [
-        "중곡동 다세대주택 외벽도장",
+        "면목동 다세대주택 외벽도장",
         "services/painting-junggok-exterior.webp"
       ],
       [
@@ -406,6 +406,14 @@ module.exports = [
       [
         "장안동 상가 내부 도장",
         "services/painting-jangan-interior.webp"
+      ],
+      [
+        "중곡동 빌라 외부도장",
+        "case_sky_14_1.jpg"
+      ],
+      [
+        "역삼동 주차타워 외부도장",
+        "case_wall_2_1.jpg"
       ]
     ],
     "symptomsTitle": "겨울철 실내 시공 전 확인하는 조건",
