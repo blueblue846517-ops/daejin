@@ -79,7 +79,7 @@ ${header}
 ${footer}
 ${dialogs}
 <div class="mobile-call-bar"><a href="tel:010-5345-8465"><i class="fa-solid fa-phone" aria-hidden="true"></i><span>전화문의 010-5345-8465</span></a><a class="mobile-quote-link" href="#estimate">빠른 견적 문의</a></div>
-<script defer src="/assets/js/script.js?v=20261119"></script><script defer src="/assets/vendor/supabase.min.js"></script><script defer src="/assets/js/supabase_init.js?v=20261016"></script>
+<script defer src="/assets/js/script.js?v=20261119-gallery"></script><script defer src="/assets/vendor/supabase.min.js"></script><script defer src="/assets/js/supabase_init.js?v=20261016"></script>
 <script defer src="/assets/js/analytics-core.js?v=20261012"></script><script defer src="/assets/js/analytics.js?v=20261012"></script><script defer src="/assets/js/site-data.js?v=12"></script>
 <script defer src="/assets/js/service-catalog.js?v=20261021"></script><script defer src="/assets/js/service-page.js?v=20261021"></script><script defer src="/assets/js/public-page.js?v=20261012"></script>
 </body></html>`;

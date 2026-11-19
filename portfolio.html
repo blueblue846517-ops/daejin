@@ -679,7 +679,7 @@
     </div>
 
     <!-- Script Import -->
-    <script src="assets/js/script.js?v=20261119"></script>
+    <script src="assets/js/script.js?v=20261119-gallery"></script>
 
     <!-- Supabase SDK & Init -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -759,20 +759,6 @@
                         });
                     });
 
-                    // 새로 생성된 DOM 요소에 대해 script.js 내부 갤러리 로직을 재바인딩해야 할 수도 있으나,
-                    // 이벤트 위임(Event Delegation)을 사용하도록 script.js를 수정하거나 직접 구현할 수 있습니다.
-                    // 간단한 모달 바인딩 (기존 스크립트와 충돌할 경우를 대비한 보험 로직)
-                    document.querySelectorAll('.photo-card.gallery-trigger').forEach(trigger => {
-                        trigger.addEventListener('click', (e) => {
-                            const modal = document.getElementById('photoGalleryModal');
-                            const img = document.getElementById('gallerySlideImg');
-                            if (modal && img) {
-                                const galleryData = JSON.parse(trigger.getAttribute('data-gallery'));
-                                img.src = galleryData[0];
-                                modal.classList.add('active');
-                            }
-                        });
-                    });
                 }
             }
         });
