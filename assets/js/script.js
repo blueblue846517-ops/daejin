@@ -322,7 +322,7 @@ function initMobileMenu() {
     const navList = document.querySelector('.nav-list');
     const navLinks = document.querySelectorAll('a.nav-link');
 
-    if (!mobileBtn || !navList) return;
+    if (!navList) return;
 
     const services = navList.querySelector('.nav-services');
     const toggle = services?.querySelector('.services-menu-toggle');
@@ -370,9 +370,11 @@ function initMobileMenu() {
     services?.querySelectorAll('.services-dropdown a').forEach(link => {
         link.addEventListener('click', () => {
             setExpanded(false);
-            if (window.innerWidth <= 768) navList.style.display = 'none';
+            if (mobileBtn && window.innerWidth <= 768) navList.style.display = 'none';
         });
     });
+
+    if (!mobileBtn) return;
 
     mobileBtn.addEventListener('click', () => {
         const isVisible = navList.style.display === 'flex';
