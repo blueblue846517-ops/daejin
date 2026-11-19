@@ -51,7 +51,7 @@ for (const p of pages) {
  <meta property="og:image" content="${origin}/assets/images/services/${p.slug}-1200.webp"><meta property="og:image:alt" content="${esc(p.alt)}">
  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261102"><link rel="icon" type="image/png" sizes="512x512" href="/assets/images/favicon-square.png?v=20261102"><link rel="apple-touch-icon" href="/assets/images/favicon-square.png?v=20261102">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
- <link rel="stylesheet" href="/assets/css/styles.css?v=20261021"><link rel="stylesheet" href="/assets/css/services.css?v=20261021">
+ <link rel="stylesheet" href="/assets/css/styles.css?v=20261119"><link rel="stylesheet" href="/assets/css/services.css?v=20261021">
  <script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')}</script>
 </head>
 <body class="service-page" data-service="${p.slug}">
@@ -78,8 +78,8 @@ ${header}
 </main>
 ${footer}
 ${dialogs}
-<div class="svc-mobile-contact"><a href="tel:010-5345-8465">전화 상담</a><a href="#estimate">빠른 견적 문의</a></div>
-<script defer src="/assets/js/script.js?v=20261116"></script><script defer src="/assets/vendor/supabase.min.js"></script><script defer src="/assets/js/supabase_init.js?v=20261016"></script>
+<div class="mobile-call-bar"><a href="tel:010-5345-8465"><i class="fa-solid fa-phone" aria-hidden="true"></i><span>전화문의 010-5345-8465</span></a><a class="mobile-quote-link" href="#estimate">빠른 견적 문의</a></div>
+<script defer src="/assets/js/script.js?v=20261119"></script><script defer src="/assets/vendor/supabase.min.js"></script><script defer src="/assets/js/supabase_init.js?v=20261016"></script>
 <script defer src="/assets/js/analytics-core.js?v=20261012"></script><script defer src="/assets/js/analytics.js?v=20261012"></script><script defer src="/assets/js/site-data.js?v=12"></script>
 <script defer src="/assets/js/service-catalog.js?v=20261021"></script><script defer src="/assets/js/service-page.js?v=20261021"></script><script defer src="/assets/js/public-page.js?v=20261012"></script>
 </body></html>`;
