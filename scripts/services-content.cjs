@@ -414,6 +414,10 @@ module.exports = [
       [
         "역삼동 주차타워 외부도장",
         "case_wall_2_1.jpg"
+      ],
+      [
+        "성산동 상가 내부도장",
+        "services/painting-seongsan-interior.webp"
       ]
     ],
     "symptomsTitle": "겨울철 실내 시공 전 확인하는 조건",
