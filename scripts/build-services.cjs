@@ -24,7 +24,7 @@ const examplePhotos = examples => examples.map(example => {
  const photo = typeof example === 'object' && example.image;
  return `<figure>${photo ? `<img src="/assets/images/services/${esc(photo)}.webp" alt="${esc(label)} 에폭시 시공 사진" width="960" height="720" loading="lazy" decoding="async">` : `<div class="svc-photo-placeholder" role="img" aria-label="${esc(label)} 사진 자리"></div>`}${example.hideCaption ? '' : `<figcaption>${esc(label)}</figcaption>`}</figure>`;
 }).join('');
-const buttons = '<div class="svc-actions"><a class="svc-button" href="tel:010-5345-8465">전화 상담 010-5345-8465</a><a class="svc-button svc-button-outline" href="#estimate">빠른 견적 문의 ↗</a></div>';
+const buttons = '<div class="svc-actions"><a class="svc-button" href="tel:010-5345-8465">전화 상담 010-5345-8465</a><a class="svc-button svc-button-outline" href="#estimate">빠른 견적 문의</a></div>';
 fs.mkdirSync(path.join(root,'services'), {recursive:true});
 const requestedSlug = process.argv[2];
 const outputPages = requestedSlug ? pages.filter(page => page.slug === requestedSlug) : pages;
@@ -61,7 +61,7 @@ for (const p of outputPages) {
  <meta property="og:image" content="${origin}${esc(heroPath)}"><meta property="og:image:alt" content="${esc(p.alt)}">
  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261102"><link rel="icon" type="image/png" sizes="512x512" href="/assets/images/favicon-square.png?v=20261102"><link rel="apple-touch-icon" href="/assets/images/favicon-square.png?v=20261102">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
- <link rel="stylesheet" href="/assets/css/styles.css?v=20261119"><link rel="stylesheet" href="/assets/css/services.css?v=20261120">
+ <link rel="stylesheet" href="/assets/css/styles.css?v=20261119"><link rel="stylesheet" href="/assets/css/services.css?v=20261120-layout">
  <script type="application/ld+json">${JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')}</script>
 </head>
 <body class="service-page" data-service="${p.slug}">
@@ -86,9 +86,9 @@ ${header}
    </article>`).join('\n')}
   </div>
  </section>` : ''}
- ${p.hideGuideSections ? '' : `<section class="svc-band" id="symptoms"><div class="container svc-split">${sectionHeading('02 · CHECK',p.symptomsTitle || '이런 상황이라면 점검이 필요합니다',p.symptomsIntro || '겉으로 보이는 증상과 실제 원인은 다를 수 있습니다. 반복되는 문제는 원인부터 확인합니다.')}<ul class="svc-symptoms">${p.symptoms.map(s=>`<li><span aria-hidden="true">↗</span>${esc(s)}</li>`).join('')}</ul></div></section>`}
+ ${p.hideGuideSections ? '' : `<section class="svc-band" id="symptoms"><div class="container svc-split">${sectionHeading('02 · CHECK',p.symptomsTitle || '이런 상황이라면 점검이 필요합니다',p.symptomsIntro || '겉으로 보이는 증상과 실제 원인은 다를 수 있습니다. 반복되는 문제는 원인부터 확인합니다.')}<ul class="svc-symptoms">${p.symptoms.map(s=>`<li><span aria-hidden="true">↗</span>${s.includes('\n') ? `<div>${esc(s).replaceAll('\n', '<br>')}</div>` : esc(s)}</li>`).join('')}</ul></div></section>`}
  ${p.hideGuideSections ? '' : `<section class="svc-section container" id="process">${sectionHeading('03 · PROCESS','시공 프로세스',p.processIntro || '일반적인 공정 안내입니다. 현장 조건, 선정한 자재와 제조사 시방에 따라 순서·횟수·두께·양생 조건이 달라집니다.')}<ol class="svc-steps svc-steps-flow" role="list" tabindex="0" aria-label="시공 순서">
-  ${p.steps.map(([title], index) => `<li><h3>${esc(title)}</h3>${index < p.steps.length - 1 ? '<span class="svc-step-arrow" aria-hidden="true">→</span>' : ''}</li>`).join('\n')}
+  ${p.steps.map(([title], index) => `<li><h3>${esc(title).replaceAll('\n', '<br>')}</h3>${index < p.steps.length - 1 ? '<span class="svc-step-arrow" aria-hidden="true">→</span>' : ''}</li>`).join('\n')}
  </ol></section>`}
  ${p.hideGuideSections ? '' : `<section class="svc-band" id="guide"><div class="container svc-section">${sectionHeading('04 · GUIDE',p.guideTitle || '의뢰 전, 함께 확인할 것')}<div class="svc-grid">${cards(p.guide)}</div><aside class="svc-maintenance"><h3>${esc(p.careTitle || '시공 후 관리와 하자 원인')}</h3><p>${esc(p.care)}</p></aside></div></section>`}
  ${showRelatedCases ? `<section class="svc-section container" id="cases">${sectionHeading('05 · WORK','관련 시공 사례','홈페이지에 등록된 사례 중 공정이 확인되는 현장을 안내합니다. 사진을 선택하면 해당 현장의 등록 사진을 볼 수 있습니다.')}<div id="serviceCases" class="svc-cases" aria-busy="true"><p role="status">관련 시공 사례를 불러오고 있습니다.</p></div><noscript><p>시공 사진은 JavaScript를 켜면 확인할 수 있습니다. 공법 설명과 문의 전화는 그대로 이용할 수 있습니다.</p></noscript><a class="svc-text-link" href="/#portfolio">전체 시공 사례 보기 ↗</a></section>` : ''}
