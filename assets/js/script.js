@@ -408,30 +408,66 @@ function initMobileMenu() {
  */
 function initPhotoGallery() {
     const modal = document.getElementById('photoGalleryModal');
-    const slideImg = document.getElementById('gallerySlideImg');
+    let slideImg = document.getElementById('gallerySlideImg');
     const counter = document.getElementById('galleryCounter');
     const closeBtn = document.getElementById('galleryCloseBtn');
     const prevBtn = document.getElementById('galleryPrevBtn');
     const nextBtn = document.getElementById('galleryNextBtn');
 
-    if (!modal) return;
+    if (!modal || !slideImg) return;
 
     let currentGallery = [];
     let currentIndex = 0;
+    let displayedIndex = 0;
+    let slideRequest = 0;
+    const preparedImages = new Map();
 
-    function showImage(index) {
+    function prepareImage(src) {
+        if (preparedImages.has(src)) return preparedImages.get(src);
+
+        const image = slideImg.cloneNode(false);
+        image.src = src;
+        const ready = image.decode().then(() => image).catch(error => {
+            if (preparedImages.get(src) === ready) preparedImages.delete(src);
+            throw error;
+        });
+        preparedImages.set(src, ready);
+        return ready;
+    }
+
+    async function showImage(index) {
         if (!currentGallery.length) return;
-        currentIndex = (index + currentGallery.length) % currentGallery.length;
-        if (slideImg) {
-            slideImg.style.opacity = '0';
-            setTimeout(() => {
-                slideImg.src = currentGallery[currentIndex];
-                slideImg.style.opacity = '1';
-            }, 100);
+        const count = currentGallery.length;
+        const targetIndex = (index + count) % count;
+        currentIndex = targetIndex;
+        const request = ++slideRequest;
+        try {
+            const nextImage = await prepareImage(currentGallery[targetIndex]);
+            if (request !== slideRequest) return;
+            if (slideImg !== nextImage) {
+                slideImg.replaceWith(nextImage);
+                slideImg = nextImage;
+            }
+            displayedIndex = targetIndex;
+            if (counter) counter.textContent = `${displayedIndex + 1} / ${count}`;
+
+            for (const offset of [-1, 1]) {
+                const src = currentGallery[(targetIndex + offset + count) % count];
+                prepareImage(src).catch(() => {});
+            }
+        } catch (error) {
+            if (request !== slideRequest) return;
+            currentIndex = displayedIndex;
+            if (counter) counter.textContent = '사진을 불러오지 못했습니다';
         }
-        if (counter) {
-            counter.textContent = `${currentIndex + 1} / ${currentGallery.length}`;
-        }
+    }
+
+    function closeGallery() {
+        ++slideRequest;
+        modal.classList.remove('active');
+        preparedImages.clear();
+        slideImg.removeAttribute('src');
+        if (counter) counter.textContent = '';
     }
 
     document.body.addEventListener('click', (e) => {
@@ -441,11 +477,14 @@ function initPhotoGallery() {
         const data = trigger.getAttribute('data-gallery');
         if (!data) return;
         try {
-            currentGallery = JSON.parse(data);
-            if (currentGallery && currentGallery.length) {
+            const gallery = JSON.parse(data);
+            if (Array.isArray(gallery) && gallery.length) {
+                closeGallery();
+                currentGallery = gallery;
                 currentIndex = 0;
-                showImage(currentIndex);
+                displayedIndex = 0;
                 modal.classList.add('active');
+                showImage(currentIndex);
             }
         } catch (err) {
             console.error('Gallery JSON error:', err);
@@ -469,13 +508,13 @@ function initPhotoGallery() {
     if (closeBtn) {
         closeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            modal.classList.remove('active');
+            closeGallery();
         });
     }
 
     modal.addEventListener('click', (e) => {
         if (e.target === modal || e.target.classList.contains('gallery-modal-box')) {
-            modal.classList.remove('active');
+            closeGallery();
         }
     });
 
@@ -487,7 +526,7 @@ function initPhotoGallery() {
         } else if (e.key === 'ArrowLeft') {
             showImage(currentIndex - 1);
         } else if (e.key === 'Escape') {
-            modal.classList.remove('active');
+            closeGallery();
         }
     });
 
