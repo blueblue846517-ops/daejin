@@ -31,9 +31,16 @@ const outputPages = requestedSlug ? pages.filter(page => page.slug === requested
 if (!outputPages.length) throw new Error("Unknown service: " + requestedSlug);
 for (const p of outputPages) {
  const url = `${origin}/services/${p.slug}`;
+ const paintingOnly = p.slug === 'painting';
+ const pageHeader = paintingOnly ? header.replace(/<li><a href="\/services\/epoxy">[^<]*<\/a><\/li>/, '') : header;
+ const organization = {...business, '@id':origin+'/#organization', url:origin+'/'};
+ if (paintingOnly) {
+  organization.description = p.description;
+  delete organization.hasOfferCatalog;
+ }
  const heroPath = p.heroImage ? "/assets/images/" + p.heroImage : "/assets/images/services/" + p.slug + "-1200.webp";
  const graph = [
-  {...business, '@id':origin+'/#organization', url:origin+'/'},
+  organization,
   {'@type':'Service','@id':url+'#service',name:p.name,description:p.description,url,provider:{'@id':origin+'/#organization'},areaServed:business.areaServed},
   {'@type':'WebPage','@id':url+'#webpage',name:p.title,description:p.description,url,inLanguage:'ko-KR',mainEntity:{'@id':url+'#service'},breadcrumb:{'@id':url+'#breadcrumb'}},
   {'@type':'BreadcrumbList','@id':url+'#breadcrumb',itemListElement:[{'@type':'ListItem',position:1,name:'홈',item:origin+'/'},{'@type':'ListItem',position:2,name:p.name,item:url}]}
@@ -60,7 +67,7 @@ for (const p of outputPages) {
 </head>
 <body class="service-page" data-service="${p.slug}">
 <a class="svc-skip" href="#main">본문 바로가기</a>
-${header}
+${pageHeader}
 <main id="main">
  <section class="svc-hero">
   <div class="container svc-breadcrumb"><a href="/">홈</a><span aria-hidden="true">/</span><a href="/#methods">시공 분야</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></div>
@@ -72,7 +79,7 @@ ${header}
  <nav class="svc-toc" aria-label="페이지 목차"><div class="container">${p.workExamples ? '<a href="#overview">시공 서비스</a>' : '<a href="#overview">시공 종류</a>'}${p.workExamples ? '<a href="#work-examples">시공 사진</a>' : ''}${p.hideGuideSections ? '' : '<a href="#symptoms">' + (p.symptomsTitle ? '겨울철 시공' : '현장 증상') + '</a><a href="#process">시공 프로세스</a><a href="#guide">시공 가이드</a>'}${showRelatedCases ? '<a href="#cases">시공 사례</a>' : ''}${p.hideGuideSections ? '' : '<a href="#faq">FAQ</a>'}<a href="#estimate">견적 문의</a></div></nav>
  <section class="svc-section container" id="overview">${sectionHeading('',p.compareTitle,p.intro)}<div class="svc-grid svc-methods${p.methodExamples ? ' svc-methods-examples' : p.compare.length === 2 ? ' svc-methods-two' : ''}">${p.compare.map((row,i)=>`<article class="svc-card svc-method"${p.methodIds?.[i] ? ` id="${esc(p.methodIds[i])}"` : ''}>${p.methodExamples?.[i] ? `<div class="svc-method-examples">${examplePhotos(p.methodExamples[i])}</div>` : ''}${p.methodImages?.[i] ? `<img src="/assets/images/services/${p.methodImages[i]}.webp" alt="${esc(row[0])} 시공 사진" width="960" height="720" loading="lazy" decoding="async">` : ''}<div><h3>${esc(row[0])}</h3>${p.hideMethodDescriptions ? '' : `${row.slice(1).filter(Boolean).map(text=>`<p>${esc(text)}</p>`).join('')}`}</div></article>`).join('')}</div>${p.methodImageNote ? `<p class="svc-image-note">${esc(p.methodImageNote)}</p>` : ''}</section>
  ${p.workExamples ? `<section class="svc-section container" id="work-examples">
-  ${sectionHeading('','실내 도장·에폭시 시공 사진')}
+  ${sectionHeading('','페인트 시공 사진')}
   <div class="svc-grid svc-methods">${p.workExamples.map(([title, description, image]) => `<article class="svc-card svc-method"><img src="/assets/images/${esc(image)}" alt="${esc(title)}" width="960" height="720" loading="lazy" decoding="async"><div><h3>${esc(title)}</h3><p>${esc(description)}</p></div></article>`).join('')}</div>
  </section>` : ''}
  ${p.hideGuideSections ? '' : `<section class="svc-band" id="symptoms"><div class="container svc-split">${sectionHeading('02 · CHECK',p.symptomsTitle || '이런 상황이라면 점검이 필요합니다',p.symptomsIntro || '겉으로 보이는 증상과 실제 원인은 다를 수 있습니다. 반복되는 문제는 원인부터 확인합니다.')}<ul class="svc-symptoms">${p.symptoms.map(s=>`<li><span aria-hidden="true">↗</span>${esc(s)}</li>`).join('')}</ul></div></section>`}
@@ -81,7 +88,7 @@ ${header}
  ${showRelatedCases ? `<section class="svc-section container" id="cases">${sectionHeading('05 · WORK','관련 시공 사례','홈페이지에 등록된 사례 중 공정이 확인되는 현장을 안내합니다. 사진을 선택하면 해당 현장의 등록 사진을 볼 수 있습니다.')}<div id="serviceCases" class="svc-cases" aria-busy="true"><p role="status">관련 시공 사례를 불러오고 있습니다.</p></div><noscript><p>시공 사진은 JavaScript를 켜면 확인할 수 있습니다. 공법 설명과 문의 전화는 그대로 이용할 수 있습니다.</p></noscript><a class="svc-text-link" href="/#portfolio">전체 시공 사례 보기 ↗</a></section>` : ''}
  ${p.hideGuideSections ? '' : `<section class="svc-band" id="faq"><div class="container svc-section svc-faq">${sectionHeading(showRelatedCases ? '06 · FAQ' : '05 · FAQ','자주 묻는 질문')}<div>${p.faq.map(([q,a])=>`<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div></div></section>`}
  <section class="svc-section container svc-estimate" id="estimate"><div>${sectionHeading(showRelatedCases ? '07 · CONTACT' : '06 · CONTACT','현장에 맞는 공사, 상담부터 시작하세요','대진특수방수는 현장 상태와 필요한 공정 범위를 확인한 뒤 정확한 견적을 안내합니다. 위치·증상·기존 보수 이력을 알려주시면 상담에 도움이 됩니다.')}<a class="svc-phone" href="tel:010-5345-8465">010-5345-8465</a><p>평일 08:00–18:00 · 전화 상담 / 현장 방문 견적 문의</p></div><div class="svc-quote"><h3>빠른 견적 문의</h3><p>현장 위치와 증상을 남겨주시면 상담에 참고하겠습니다.</p><script>var heroFormSubmitted=false;</script><iframe name="hero_hidden_iframe" id="hero_hidden_iframe" title="견적 접수 처리" hidden onload="if(heroFormSubmitted) { var kw=''; try {kw=sessionStorage.getItem('inflow_keyword')||'';} catch(e){} location.href='/thanks.html'+(kw?'?keyword='+encodeURIComponent(kw):''); }"></iframe>${form}<p class="svc-small">입력한 이름·연락처·문의 내용은 견적 상담을 위해 접수됩니다. <a href="#" id="servicePrivacyLink">개인정보처리방침 확인</a></p></div></section>
- <nav class="svc-other container" aria-label="다른 시공 분야"><h2>다른 시공 분야도 살펴보세요</h2><div>${pages.filter(x=>x!==p).map(x=>`<a href="/services/${x.slug}">${esc(x.name)} ↗</a>`).join('')}</div></nav>
+ <nav class="svc-other container" aria-label="다른 시공 분야"><h2>다른 시공 분야도 살펴보세요</h2><div>${pages.filter(x=>x!==p && !(paintingOnly && x.slug === 'epoxy')).map(x=>`<a href="/services/${x.slug}">${esc(x.name)} ↗</a>`).join('')}</div></nav>
  ${p.sources.length ? `<aside class="svc-sources container"><details><summary>기술 참고자료 및 안내 기준</summary><p>일반 공법을 설명하기 위한 제조사 자료입니다. 특정 제품의 사용이나 회사의 해당 제품 인증·파트너십을 의미하지 않습니다. 실제 시공은 선정 자재의 최신 시방을 따릅니다.</p><ul>${p.sources.map(([label,href])=>`<li><a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a></li>`).join('')}</ul></details></aside>` : ''}
 </main>
 ${footer}
@@ -91,6 +98,9 @@ ${dialogs}
 <script defer src="/assets/js/analytics-core.js?v=20261012"></script><script defer src="/assets/js/analytics.js?v=20261012"></script><script defer src="/assets/js/site-data.js?v=12"></script>
 <script defer src="/assets/js/service-catalog.js?v=20261021"></script><script defer src="/assets/js/service-page.js?v=20261021"></script><script defer src="/assets/js/public-page.js?v=20261012"></script>
 </body></html>`;
- fs.writeFileSync(path.join(root,'services',p.slug+'.html'),html);
+ const output = paintingOnly
+  ? html.replaceAll('<span aria-hidden="true">↗</span>', '').replaceAll(' ↗', '').replaceAll('↗', '')
+  : html;
+ fs.writeFileSync(path.join(root,'services',p.slug+'.html'),output);
 }
 console.log(`Generated ${outputPages.length} static service page(s).`);
