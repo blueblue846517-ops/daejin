@@ -390,6 +390,22 @@ module.exports = [
       [
         "성수동 남양에코넷 철제 난간 도장",
         "services/painting-metal.webp"
+      ],
+      [
+        "중곡동 다세대주택 외벽도장",
+        "services/painting-junggok-exterior.webp"
+      ],
+      [
+        "군자동 내부 에어리스 도장",
+        "services/painting-gunja-airless.webp"
+      ],
+      [
+        "성산동 상가 외벽 도장",
+        "home-portfolio/case-06-02.webp"
+      ],
+      [
+        "장안동 상가 내부 도장",
+        "services/painting-jangan-interior.webp"
       ]
     ],
     "symptomsTitle": "겨울철 실내 시공 전 확인하는 조건",
