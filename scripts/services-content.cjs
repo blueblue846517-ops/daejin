@@ -351,7 +351,6 @@ module.exports = [
     "slug": "painting",
     "name": "내외부 페인트시공",
     "hideGuideTitle": true,
-    "heroLead": "사무실·상가·공장의 실내 벽과 천장부터 건물 외벽과 철제 구조물까지, 바탕과 사용 환경에 맞춰 수성·유성 페인트를 시공합니다. 작업 전 바닥과 집기, 창호를 꼼꼼히 보양합니다.",
     "heroImage": "services/painting-interior.webp",
     "image": "services/painting-exterior.webp",
     "heroCropPosition": "north",
@@ -382,17 +381,14 @@ module.exports = [
     "workExamples": [
       [
         "군자동 조립식 판넬 건물 내부도장",
-        "홈페이지 주요 시공사례에 소개된 군자동 현장입니다.",
         "home-portfolio/case-09-cover.webp"
       ],
       [
-        "건물 외벽 도장",
-        "고소작업 장비를 이용한 외벽 도장 현장입니다.",
+        "역삼동 서우빌딩 외벽도장",
         "services/painting-exterior.webp"
       ],
       [
-        "철제 난간 도장",
-        "철제 난간을 롤러로 도장하는 모습입니다.",
+        "성수동 남양에코넷 철제 난간 도장",
         "services/painting-metal.webp"
       ]
     ],
@@ -419,7 +415,7 @@ module.exports = [
       ],
       [
         "하도와 마감 도장",
-        "바탕에 맞는 하도를 적용한 뒤 수성 또는 유성 페인트로 마감합니다. 도포 간격과 건조 조건은 도료 기준에 따릅니다."
+        "바탕에 맞는 하도를 적용한 뒤 수성 또는 유성 페인트로 마감합니다. 롤러가 닿기 어려운 철골 접합부나 좁은 틈은 현장과 도료에 맞춰 에어리스 분사 장비로 도장합니다."
       ],
       [
         "마감 검사와 사용 안내",
