@@ -32,7 +32,6 @@ if (!outputPages.length) throw new Error("Unknown service: " + requestedSlug);
 for (const p of outputPages) {
  const url = `${origin}/services/${p.slug}`;
  const paintingOnly = p.slug === 'painting';
- const pageHeader = paintingOnly ? header.replace(/<li><a href="\/services\/epoxy">[^<]*<\/a><\/li>/, '') : header;
  const organization = {...business, '@id':origin+'/#organization', url:origin+'/'};
  if (paintingOnly) {
   organization.description = p.description;
@@ -67,7 +66,7 @@ for (const p of outputPages) {
 </head>
 <body class="service-page" data-service="${p.slug}">
 <a class="svc-skip" href="#main">본문 바로가기</a>
-${pageHeader}
+${header}
 <main id="main">
  <section class="svc-hero">
   <div class="container svc-breadcrumb"><a href="/">홈</a><span aria-hidden="true">/</span><a href="/#methods">시공 분야</a><span aria-hidden="true">/</span><span aria-current="page">${esc(p.name)}</span></div>
@@ -88,7 +87,7 @@ ${pageHeader}
  ${showRelatedCases ? `<section class="svc-section container" id="cases">${sectionHeading('05 · WORK','관련 시공 사례','홈페이지에 등록된 사례 중 공정이 확인되는 현장을 안내합니다. 사진을 선택하면 해당 현장의 등록 사진을 볼 수 있습니다.')}<div id="serviceCases" class="svc-cases" aria-busy="true"><p role="status">관련 시공 사례를 불러오고 있습니다.</p></div><noscript><p>시공 사진은 JavaScript를 켜면 확인할 수 있습니다. 공법 설명과 문의 전화는 그대로 이용할 수 있습니다.</p></noscript><a class="svc-text-link" href="/#portfolio">전체 시공 사례 보기 ↗</a></section>` : ''}
  ${p.hideGuideSections ? '' : `<section class="svc-band" id="faq"><div class="container svc-section svc-faq">${sectionHeading(showRelatedCases ? '06 · FAQ' : '05 · FAQ','자주 묻는 질문')}<div>${p.faq.map(([q,a])=>`<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div></div></section>`}
  <section class="svc-section container svc-estimate" id="estimate"><div>${sectionHeading(showRelatedCases ? '07 · CONTACT' : '06 · CONTACT','현장에 맞는 공사, 상담부터 시작하세요','대진특수방수는 현장 상태와 필요한 공정 범위를 확인한 뒤 정확한 견적을 안내합니다. 위치·증상·기존 보수 이력을 알려주시면 상담에 도움이 됩니다.')}<a class="svc-phone" href="tel:010-5345-8465">010-5345-8465</a><p>평일 08:00–18:00 · 전화 상담 / 현장 방문 견적 문의</p></div><div class="svc-quote"><h3>빠른 견적 문의</h3><p>현장 위치와 증상을 남겨주시면 상담에 참고하겠습니다.</p><script>var heroFormSubmitted=false;</script><iframe name="hero_hidden_iframe" id="hero_hidden_iframe" title="견적 접수 처리" hidden onload="if(heroFormSubmitted) { var kw=''; try {kw=sessionStorage.getItem('inflow_keyword')||'';} catch(e){} location.href='/thanks.html'+(kw?'?keyword='+encodeURIComponent(kw):''); }"></iframe>${form}<p class="svc-small">입력한 이름·연락처·문의 내용은 견적 상담을 위해 접수됩니다. <a href="#" id="servicePrivacyLink">개인정보처리방침 확인</a></p></div></section>
- <nav class="svc-other container" aria-label="다른 시공 분야"><h2>다른 시공 분야도 살펴보세요</h2><div>${pages.filter(x=>x!==p && !(paintingOnly && x.slug === 'epoxy')).map(x=>`<a href="/services/${x.slug}">${esc(x.name)} ↗</a>`).join('')}</div></nav>
+ <nav class="svc-other container" aria-label="다른 시공 분야"><h2>다른 시공 분야도 살펴보세요</h2><div>${pages.filter(x=>x!==p).map(x=>`<a href="/services/${x.slug}">${esc(x.name)} ↗</a>`).join('')}</div></nav>
  ${p.sources.length ? `<aside class="svc-sources container"><details><summary>기술 참고자료 및 안내 기준</summary><p>일반 공법을 설명하기 위한 제조사 자료입니다. 특정 제품의 사용이나 회사의 해당 제품 인증·파트너십을 의미하지 않습니다. 실제 시공은 선정 자재의 최신 시방을 따릅니다.</p><ul>${p.sources.map(([label,href])=>`<li><a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a></li>`).join('')}</ul></details></aside>` : ''}
 </main>
 ${footer}
